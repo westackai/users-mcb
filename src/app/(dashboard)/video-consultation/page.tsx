@@ -1,5 +1,5 @@
 'use client'
-export const runtime = 'edge';
+ 
 import React, { useEffect, useState } from 'react'
 import { 
     Video, 
@@ -87,8 +87,13 @@ const VideoConsultationPage = () => {
     }
 
     const getAvatarList = async () => {
-        const response = await avatarListApiRequest()
-        console.log(response)
+        try {
+            const response = await avatarListApiRequest()
+            console.log(response)
+        } catch (error) {
+            console.error('Failed to fetch avatar list:', error)
+            // Continue with the hardcoded avatar list if API fails
+        }
     }
 
     useEffect(() => {

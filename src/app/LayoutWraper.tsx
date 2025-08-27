@@ -1,5 +1,5 @@
 'use client'
-export const runtime = 'edge';
+ 
 
 import React, { useEffect } from 'react'
 import SideBar from '@/components/SideBar'
@@ -30,6 +30,12 @@ const LayoutWraper = ({ children }: LayoutWraperProps) => {
         if (!token && !isPublicRoute) {
             // Redirect to login if no token and trying to access protected route
             router.push('/login')
+            return
+        }
+
+        // Redirect from root path to video-consultation if user has token
+        if (token && pathName === '/') {
+            router.push('/video-consultation')
             return
         }
 

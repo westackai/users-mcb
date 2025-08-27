@@ -1,6 +1,34 @@
 import axios from "axios";
 import { getToken, removeHasPhoneNumber, removeHasSubscription, removeIsOnboardingDone, removeToken } from "../../_utils/cookies";
 
+function getUrl(config: any) {
+    if (config?.baseURL) {
+        let _url = config?.url;
+        return _url.replace(config?.baseURL, "");
+    }
+    return config?.url;
+}
+
+const logError = (error: any) => {
+    console.error(
+        `% c#ERROR ${error?.response?.status} - ${getUrl(
+            error?.response?.config
+        )}: `,
+        "color: #f44336 font-weight: bold",
+        error?.response?.statusText
+    );
+};
+
+const unauthorizeAccess = () => {
+    console.log("Unauthorized access triggered");
+    removeToken();
+    removeIsOnboardingDone();
+    removeHasSubscription();
+    removeHasPhoneNumber();
+    setTimeout(() => {
+        window.location.href = "/";
+    }, 100);
+};
 
 export const axiosClient = axios.create({
     baseURL: process.env.NEXT_PUBLIC_API_URL,
@@ -69,37 +97,3 @@ axiosClient.interceptors.response.use(
         }
     }
 )
-
-
-
-
-function getUrl(config: any) {
-    if (config?.baseURL) {
-        let _url = config?.url;
-        return _url.replace(config?.baseURL, "");
-    }
-    return config?.url;
-}
-
-
-const logError = (error: any) => {
-    console.error(
-        `% c#ERROR ${error?.response?.status} - ${getUrl(
-            error?.response?.config
-        )}: `,
-        "color: #f44336 font-weight: bold",
-        error?.response?.statusText
-    );
-};
-
-
-const unauthorizeAccess = () => {
-    console.log("Unauthorized access triggered");
-    removeToken();
-    removeIsOnboardingDone();
-    removeHasSubscription();
-    removeHasPhoneNumber();
-    setTimeout(() => {
-        window.location.href = "/";
-    }, 100);
-};
