@@ -30,7 +30,17 @@
     "eslint-config-next": "15.3.3",
     "tailwindcss": "4.1.1",
     "typescript": "5.8.3",
-    "wrangler": "4.21.x"
+    "wrangler": "4.21.x",
+    "@reduxjs/toolkit": "^2.8.2",
+    "axios": "^1.11.0",
+    "js-cookie": "^3.0.5",
+    "lucide-react": "^0.540.0",
+    "luxon": "^3.7.1",
+    "next": "15.5.0",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "react-redux": "^9.2.0",
+    "react-toastify": "^11.0.5"
   },
   "scripts": {
     "build": "next build",
