@@ -29,12 +29,13 @@ interface Message {
 }
 
 interface VideoConsultationProps {
-    params: {
+    params: Promise<{
         id: string
-    }
+    }>
 }
 
-const VideoConsultationPage = ({ params }: VideoConsultationProps) => {
+const VideoConsultationPage = async ({ params }: VideoConsultationProps) => {
+    const { id } = await params
     const [isMuted, setIsMuted] = useState(false)
     const [isVideoOn, setIsVideoOn] = useState(true)
     const [isCallActive, setIsCallActive] = useState(true)
