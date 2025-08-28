@@ -47,7 +47,7 @@ export interface OnboardingData {
 const OnboardingPage = () => {
     const router = useRouter()
     const userProfile = useSelector((state: any) => state.user.userProfile)
-    console.log("userProfile", userProfile)
+   
     const [currentStep, setCurrentStep] = useState(1)
     const [isLoading, setIsLoading] = useState(false)
     const [onboardingId, setOnboardingId] = useState(userProfile?.onbording_uuid || '')
@@ -304,6 +304,9 @@ const OnboardingPage = () => {
     }
 
     useEffect(() => {
+        if(userProfile?.is_onbording_completed){
+            router.push('/')
+        }
         if (userProfile?.onbording_uuid) {
             const fetchOnboarding = async () => {
                 console.log("userProfile?.uuid", userProfile?.onbording_uuid)
