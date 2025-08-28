@@ -55,19 +55,20 @@ const OnboardingSidebar: React.FC<OnboardingSidebarProps> = ({
         <div className="space-y-3">
           {steps.map((step) => {
             const status = getStepStatus(step.id)
-            const isClickable = step.id <= currentStep || isStepValid(step.id - 1)
+            // Allow free navigation when on review step (step 4), otherwise restrict to completed/valid steps
+            const isClickable = currentStep === 4 ? true : (step.id <= currentStep || isStepValid(step.id - 1))
 
             return (
               <div
                 key={step.id}
                 onClick={() => isClickable && onStepClick(step.id)}
-                className={`p-4 rounded-lg cursor-pointer transition-all duration-200 ${status === 'completed'
+                className={`p-4 rounded-lg transition-all duration-200 ${isClickable ? 'cursor-pointer' : 'cursor-not-allowed'} ${status === 'completed'
                     ? 'bg-green-50 border border-green-200 hover:bg-green-100'
                     : status === 'current'
                       ? 'bg-blue-50 border border-blue-200'
                       : isClickable
                         ? 'bg-gray-50 border border-gray-200 hover:bg-gray-100'
-                        : 'bg-gray-50 border border-gray-200 opacity-50 cursor-not-allowed'
+                        : 'bg-gray-50 border border-gray-200 opacity-50'
                   }`}
               >
                 <div className="flex items-center space-x-3">

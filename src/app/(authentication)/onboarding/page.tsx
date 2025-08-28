@@ -11,9 +11,10 @@ import type { OnboardingStep } from '@/components/onboarding/OnboardingSidebar'
 import ReviewStep from '@/components/onboarding/ReviewStep'
 import { getOnboardingApiRequest, onboardingCreateApiRequest, onboardingUpdateApiRequest } from '@/networks/api'
 import { useRouter } from 'next/navigation'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { calculateDateOfBirthFromAge } from '../../../../_utils/general'
 import { toast } from 'react-toastify'
+import { getUserDetailsThunk } from '@/lib/Redux/ReduxActions/userActions';
 
 export interface OnboardingData {
     // Basic Information
@@ -47,7 +48,7 @@ export interface OnboardingData {
 const OnboardingPage = () => {
     const router = useRouter()
     const userProfile = useSelector((state: any) => state.user.userProfile)
-   
+    const dispatch = useDispatch()
     const [currentStep, setCurrentStep] = useState(1)
     const [isLoading, setIsLoading] = useState(false)
     const [onboardingId, setOnboardingId] = useState(userProfile?.onbording_uuid || '')
@@ -189,8 +190,14 @@ const OnboardingPage = () => {
     }
 
     const goToStep = (stepNumber: number) => {
-        if (stepNumber <= currentStep || isStepValid(stepNumber - 1)) {
+        // Allow free navigation when on review step (step 4)
+        if (currentStep === 4) {
             setCurrentStep(stepNumber)
+        } else {
+            // Restrict navigation to only completed steps or next valid step
+            if (stepNumber <= currentStep || isStepValid(stepNumber - 1)) {
+                setCurrentStep(stepNumber)
+            }
         }
     }
 
@@ -235,6 +242,7 @@ const OnboardingPage = () => {
             if (response) {
                 if (response?.data?.message === "Onboarding updated successfully" && response?.data?.data?.uuid) {
                     toast.success('Your onboarding is completed successfully!')
+                    dispatch(getUserDetailsThunk() as any)
                     // Redirect to home page after a short delay to show the toast
                     setTimeout(() => {
                         router.push('/')
