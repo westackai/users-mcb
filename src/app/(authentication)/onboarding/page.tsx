@@ -295,7 +295,15 @@ const OnboardingPage = () => {
             case 2:
                 return !!(onboardingData.medicationSideEffects && onboardingData.organizationDifficulty && onboardingData.memoryIssues && onboardingData.sleepQuality && onboardingData.substanceUse && onboardingData.otherConditions && onboardingData.moodPatterns && onboardingData.losingItems)
             case 3:
-                return true // Medical history is optional, including otherMedicalConditions
+                // Medical history requires at least one condition to be selected
+                return onboardingData.none || 
+                       onboardingData.sleepDisorders || 
+                       onboardingData.asthma || 
+                       onboardingData.anxiety || 
+                       onboardingData.depression || 
+                       onboardingData.personalityDisorders || 
+                       onboardingData.hypertension || 
+                       (onboardingData.hasOtherMedicalConditions && onboardingData.otherMedicalConditions.trim().length > 0)
             case 4:
                 return true // Review step is always valid
             default:

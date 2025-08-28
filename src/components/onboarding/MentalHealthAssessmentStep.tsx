@@ -2,7 +2,7 @@
 import React from 'react'
 import { Brain, AlertCircle, Clock, Heart, Coffee, Pill, Users } from 'lucide-react'
 
-interface HealthSymptomsStepProps {
+interface MentalHealthAssessmentStepProps {
   data: {
     medicationSideEffects: string
     organizationDifficulty: string
@@ -25,7 +25,7 @@ interface HealthSymptomsStepProps {
   }>) => void
 }
 
-const HealthSymptomsStep: React.FC<HealthSymptomsStepProps> = ({ data, updateData }) => {
+const MentalHealthAssessmentStep: React.FC<MentalHealthAssessmentStepProps> = ({ data, updateData }) => {
   const handleInputChange = (field: string, value: string) => {
     updateData({ [field]: value })
   }
@@ -162,4 +162,4 @@ const HealthSymptomsStep: React.FC<HealthSymptomsStepProps> = ({ data, updateDat
   )
 }
 
-export default HealthSymptomsStep 
+export default MentalHealthAssessmentStep 
