@@ -4,6 +4,7 @@ import { FileText, CheckSquare, Square, AlertCircle, Heart, Brain, Activity, Clo
 
 interface MedicalHistoryStepProps {
   data: {
+    none: boolean
     sleepDisorders: boolean
     asthma: boolean
     anxiety: boolean
@@ -14,6 +15,7 @@ interface MedicalHistoryStepProps {
     otherMedicalConditions: string
   }
   updateData: (data: Partial<{
+    none: boolean
     sleepDisorders: boolean
     asthma: boolean
     anxiety: boolean
@@ -27,7 +29,29 @@ interface MedicalHistoryStepProps {
 
 const MedicalHistoryStep: React.FC<MedicalHistoryStepProps> = ({ data, updateData }) => {
   const handleCheckboxChange = (field: string, checked: boolean) => {
-    updateData({ [field]: checked })
+    if (field === 'none') {
+      if (checked) {
+        // If "None" is selected, uncheck all other conditions
+        updateData({
+          none: true,
+          sleepDisorders: false,
+          asthma: false,
+          anxiety: false,
+          depression: false,
+          personalityDisorders: false,
+          hypertension: false,
+          hasOtherMedicalConditions: false,
+          otherMedicalConditions: ''
+        })
+      } else {
+        // If "None" is unchecked, just uncheck it
+        updateData({ none: false })
+      }
+    } else {
+      // If any other condition is selected, uncheck "None"
+      const updateDataObj: any = { [field]: checked, none: false }
+      updateData(updateDataObj)
+    }
   }
 
   const handleTextChange = (field: string, value: string) => {
@@ -36,42 +60,49 @@ const MedicalHistoryStep: React.FC<MedicalHistoryStepProps> = ({ data, updateDat
 
   const medicalConditions = [
     {
-      key: 'Sleep Disorders',
+      key: 'none',
+      label: 'None',
+      description: 'I do not have any of the medical conditions listed below',
+      icon: <CheckSquare className="h-5 w-5 text-green-500" />,
+      category: 'General'
+    },
+    {
+      key: 'sleepDisorders',
       label: 'Sleep Disorders',
       description: 'Insomnia, sleep apnea, restless leg syndrome',
       icon: <Clock className="h-5 w-5 text-indigo-500" />,
       category: 'Sleep & Rest'
     },
     {
-      key: 'Asthma',
+      key: 'asthma',
       label: 'Asthma',
       description: 'Respiratory condition causing breathing difficulties',
       icon: <Activity className="h-5 w-5 text-blue-500" />,
       category: 'Respiratory'
     },
     {
-      key: 'Anxiety',
+      key: 'anxiety',
       label: 'Anxiety Disorders',
       description: 'Generalized anxiety, panic attacks, social anxiety',
       icon: <Brain className="h-5 w-5 text-purple-500" />,
       category: 'Mental Health'
     },
     {
-      key: 'Depression',
+      key: 'depression',
       label: 'Depression',
       description: 'Major depressive disorder, persistent depressive disorder',
       icon: <Heart className="h-5 w-5 text-red-500" />,
       category: 'Mental Health'
     },
     {
-      key: 'Personality Disorders',
+      key: 'personalityDisorders',
       label: 'Personality Disorders',
       description: 'Borderline, narcissistic, or other personality disorders',
       icon: <Brain className="h-5 w-5 text-orange-500" />,
       category: 'Mental Health'
     },
     {
-      key: 'Hypertension',
+      key: 'hypertension',
       label: 'Hypertension',
       description: 'High blood pressure or cardiovascular conditions',
       icon: <Droplets className="h-5 w-5 text-red-600" />,
@@ -142,7 +173,7 @@ const MedicalHistoryStep: React.FC<MedicalHistoryStepProps> = ({ data, updateDat
           {/* Textarea */}
           <div>
             <textarea
-              value={data.otherMedicalConditions}
+              value={data.otherMedicalConditions || ''}
               onChange={(e) => {
                 const value = e.target.value
                 handleTextChange('otherMedicalConditions', value)

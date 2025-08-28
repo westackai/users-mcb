@@ -1,5 +1,5 @@
 'use client'
- 
+export const runtime = 'edge';
 
 import React, { useState, useEffect, useRef } from 'react'
 import { 
@@ -28,15 +28,9 @@ interface Message {
     timestamp: Date
 }
 
-interface VideoConsultationProps {
-    params: Promise<{
-        id: string
-    }>
-}
 
-const VideoConsultationPage = ({ params }: VideoConsultationProps) => {
-    const [id, setId] = useState<string>('')
-    const [isLoading, setIsLoading] = useState(true)
+
+const VideoConsultationPage = () => {
     const [isMuted, setIsMuted] = useState(false)
     const [isVideoOn, setIsVideoOn] = useState(true)
     const [isCallActive, setIsCallActive] = useState(true)
@@ -56,21 +50,6 @@ const VideoConsultationPage = ({ params }: VideoConsultationProps) => {
 
     const videoRef = useRef<HTMLVideoElement>(null)
     const chatEndRef = useRef<HTMLDivElement>(null)
-
-    // Handle async params
-    useEffect(() => {
-        const getParams = async () => {
-            try {
-                const resolvedParams = await params
-                setId(resolvedParams.id)
-                setIsLoading(false)
-            } catch (error) {
-                console.error('Failed to resolve params:', error)
-                setIsLoading(false)
-            }
-        }
-        getParams()
-    }, [params])
 
     // Simulate call duration timer
     useEffect(() => {
@@ -130,17 +109,6 @@ const VideoConsultationPage = ({ params }: VideoConsultationProps) => {
     const toggleCall = () => setIsCallActive(!isCallActive)
     const toggleFullscreen = () => setIsFullscreen(!isFullscreen)
     const toggleVolume = () => setIsVolumeOn(!isVolumeOn)
-
-    if (isLoading) {
-        return (
-            <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
-                <div className="text-center">
-                    <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <p className="text-slate-600">Loading consultation...</p>
-                </div>
-            </div>
-        )
-    }
 
     return (
         <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex">

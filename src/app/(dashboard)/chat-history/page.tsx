@@ -1,5 +1,5 @@
 'use client'
- 
+export const runtime = 'edge';
 import React, { useState } from 'react'
 import { 
     Folder, 
@@ -30,7 +30,7 @@ const chatSessions = [
         date: '2024-01-15',
         duration: '45 min',
         doctor: 'Dr. Marie Claire Bourque',
-        specialty: 'Psychiatry',
+        specialty: 'Psychiatrist',
         summary: 'Discussed anxiety symptoms, depression episodes, and stress management techniques. Reviewed medication effectiveness and coping strategies for daily challenges.',
         chatCount: 23,
         lastMessage: 'Thank you for the consultation, doctor. I feel much better now.',
@@ -43,7 +43,7 @@ const chatSessions = [
         date: '2024-01-03',
         duration: '40 min',
         doctor: 'Dr. Marie Claire Bourque',
-        specialty: 'Psychiatry',
+        specialty: 'Psychiatrist',
         summary: 'Evaluated ADHD symptoms and medication effectiveness. Discussed organizational strategies, time management techniques, and workplace accommodations.',
         chatCount: 20,
         lastMessage: 'The organizational apps you recommended are really helping.',

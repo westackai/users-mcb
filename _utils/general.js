@@ -1,6 +1,6 @@
 const { DateTime } = require('luxon');
 import { format } from 'date-fns';
-import { useTranslations } from 'next-intl';
+
 
 
 export function formatDateTime(dateTimeStr, formatType = 'both') {
@@ -241,5 +241,36 @@ export function formatEuroAmount(amount) {
     .toFixed(2) // always show 2 decimals
     .replace('.', ',') // replace decimal point with comma
     .replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // add dot as thousand separator
+}
+
+export function calculateDateOfBirthFromAge(age) {
+  if (!age || age <= 0) return '';
+  
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const birthYear = currentYear - age;
+  
+  // Create a date with the calculated birth year, using January 1st as default
+  const dateOfBirth = new Date(birthYear, 0, 1);
+  
+  // Format as YYYY-MM-DD for input compatibility
+  return dateOfBirth.toISOString().split('T')[0];
+}
+
+export function calculateAgeFromDateOfBirth(dateOfBirth) {
+  if (!dateOfBirth) return 0;
+  
+  const birthDate = new Date(dateOfBirth);
+  const currentDate = new Date();
+  
+  let age = currentDate.getFullYear() - birthDate.getFullYear();
+  const monthDiff = currentDate.getMonth() - birthDate.getMonth();
+  
+  // If the current month is before the birth month, or if it's the same month but the current day is before the birth day
+  if (monthDiff < 0 || (monthDiff === 0 && currentDate.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  
+  return age;
 }
 

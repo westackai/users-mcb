@@ -1,5 +1,5 @@
 'use client'
- 
+export const runtime = 'edge';
 import React, { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { 
@@ -30,7 +30,7 @@ const chatSessions = [
         date: '2024-01-15',
         duration: '45 min',
         doctor: 'Dr. Marie Claire Bourque',
-        specialty: 'Psychiatry',
+        specialty: 'Psychiatrist',
         summary: 'Discussed anxiety symptoms, depression episodes, and stress management techniques. Reviewed medication effectiveness and coping strategies for daily challenges. Patient reported improvement in symptoms and better sleep quality. Recommended continued use of prescribed medications and daily mindfulness exercises.',
         chatCount: 23,
         lastMessage: 'Thank you for the consultation, doctor. I feel much better now.',

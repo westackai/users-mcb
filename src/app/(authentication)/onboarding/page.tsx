@@ -1,5 +1,5 @@
 'use client'
- 
+export const runtime = 'edge';
 
 import React, { useEffect, useState } from 'react'
 import { ChevronLeft, ChevronRight, CheckCircle, User, Brain, FileText } from 'lucide-react'
@@ -12,6 +12,8 @@ import ReviewStep from '@/components/onboarding/ReviewStep'
 import { getOnboardingApiRequest, onboardingCreateApiRequest, onboardingUpdateApiRequest } from '@/networks/api'
 import { useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
+import { calculateDateOfBirthFromAge } from '../../../../_utils/general'
+import { toast } from 'react-toastify'
 
 export interface OnboardingData {
     // Basic Information
@@ -31,6 +33,7 @@ export interface OnboardingData {
     losingItems: string
 
     // Medical History
+    none: boolean
     sleepDisorders: boolean
     asthma: boolean
     anxiety: boolean
@@ -43,14 +46,15 @@ export interface OnboardingData {
 
 const OnboardingPage = () => {
     const router = useRouter()
+    const userProfile = useSelector((state: any) => state.user.userProfile)
+    console.log("userProfile", userProfile)
     const [currentStep, setCurrentStep] = useState(1)
     const [isLoading, setIsLoading] = useState(false)
-    const userProfile = useSelector((state: any) => state.user.userProfile)
-    const [onboardingId, setOnboardingId] = useState('')
+    const [onboardingId, setOnboardingId] = useState(userProfile?.onbording_uuid || '')
     const [onboardingData, setOnboardingData] = useState<OnboardingData>({
-        name: '',
+        name: "",
         age: 0,
-        gender: '',
+        gender: 'male',
         dateOfBirth: '',
         medicationSideEffects: '',
         organizationDifficulty: '',
@@ -60,6 +64,7 @@ const OnboardingPage = () => {
         otherConditions: '',
         moodPatterns: '',
         losingItems: '',
+        none: false,
         sleepDisorders: false,
         asthma: false,
         anxiety: false,
@@ -138,14 +143,18 @@ const OnboardingPage = () => {
                 else if (currentStep === 3) {
                     const checkedConditions = []
 
-                    if (onboardingData.sleepDisorders) checkedConditions.push("Sleep Disorders")
-                    if (onboardingData.asthma) checkedConditions.push("Asthma")
-                    if (onboardingData.anxiety) checkedConditions.push("Anxiety Disorders")
-                    if (onboardingData.depression) checkedConditions.push("Depression")
-                    if (onboardingData.personalityDisorders) checkedConditions.push("Personality Disorders")
-                    if (onboardingData.hypertension) checkedConditions.push("Hypertension")
-                    if (onboardingData.hasOtherMedicalConditions && onboardingData.otherMedicalConditions.trim()) {
-                        checkedConditions.push(onboardingData.otherMedicalConditions)
+                    if (onboardingData.none) {
+                        checkedConditions.push("None")
+                    } else {
+                        if (onboardingData.sleepDisorders) checkedConditions.push("Sleep Disorders")
+                        if (onboardingData.asthma) checkedConditions.push("Asthma")
+                        if (onboardingData.anxiety) checkedConditions.push("Anxiety Disorders")
+                        if (onboardingData.depression) checkedConditions.push("Depression")
+                        if (onboardingData.personalityDisorders) checkedConditions.push("Personality Disorders")
+                        if (onboardingData.hypertension) checkedConditions.push("Hypertension")
+                        if (onboardingData.hasOtherMedicalConditions && onboardingData.otherMedicalConditions.trim()) {
+                            checkedConditions.push(onboardingData.otherMedicalConditions)
+                        }
                     }
 
                     payload = {
@@ -153,9 +162,11 @@ const OnboardingPage = () => {
                     }
                 }
                 let response
-                if(currentStep === 1 && !onboardingId){
+                if (currentStep === 1 && !onboardingId) {
                     response = await onboardingCreateApiRequest(payload)
-                }else{
+                    setOnboardingId(response?.data?.data?.uuid)
+                    console.log("response ----", response)
+                } else {
                     response = await onboardingUpdateApiRequest(onboardingId, payload)
                 }
 
@@ -202,28 +213,41 @@ const OnboardingPage = () => {
                 lose_essential_items: onboardingData.losingItems,
                 history_of_medical: (() => {
                     const checkedConditions = []
-                    if (onboardingData.sleepDisorders) checkedConditions.push("Sleep Disorders")
-                    if (onboardingData.asthma) checkedConditions.push("Asthma")
-                    if (onboardingData.anxiety) checkedConditions.push("Anxiety Disorders")
-                    if (onboardingData.depression) checkedConditions.push("Depression")
-                    if (onboardingData.personalityDisorders) checkedConditions.push("Personality Disorders")
-                    if (onboardingData.hypertension) checkedConditions.push("Hypertension")
-                    if (onboardingData.hasOtherMedicalConditions && onboardingData.otherMedicalConditions.trim()) {
-                        checkedConditions.push(onboardingData.otherMedicalConditions)
+                    if (onboardingData.none) {
+                        checkedConditions.push("None")
+                    } else {
+                        if (onboardingData.sleepDisorders) checkedConditions.push("Sleep Disorders")
+                        if (onboardingData.asthma) checkedConditions.push("Asthma")
+                        if (onboardingData.anxiety) checkedConditions.push("Anxiety Disorders")
+                        if (onboardingData.depression) checkedConditions.push("Depression")
+                        if (onboardingData.personalityDisorders) checkedConditions.push("Personality Disorders")
+                        if (onboardingData.hypertension) checkedConditions.push("Hypertension")
+                        if (onboardingData.hasOtherMedicalConditions && onboardingData.otherMedicalConditions.trim()) {
+                            checkedConditions.push(onboardingData.otherMedicalConditions)
+                        }
                     }
                     return checkedConditions
                 })()
             }
 
             const response = await onboardingUpdateApiRequest(onboardingId, finalPayload)
-console.log("response", response)
+            console.log("response", response)
             if (response) {
-                if (response?.data?.message === "onbording has created sucssesfully" && response?.data?.uuid) {
-                    router.push(`/video-consultation`)
+                if (response?.data?.message === "Onboarding updated successfully" && response?.data?.data?.uuid) {
+                    toast.success('Your onboarding is completed successfully!')
+                    // Redirect to home page after a short delay to show the toast
+                    setTimeout(() => {
+                        router.push('/')
+                    }, 1500)
+                } else {
+                    toast.error('Failed to complete onboarding. Please try again.')
                 }
+            } else {
+                toast.error('Failed to complete onboarding. Please try again.')
             }
         } catch (error) {
             console.error('Error completing onboarding:', error)
+            toast.error('An error occurred while completing onboarding. Please try again.')
         } finally {
             setIsLoading(false)
         }
@@ -280,43 +304,103 @@ console.log("response", response)
     }
 
     useEffect(() => {
-        if (userProfile?.uuid) {
-        const fetchOnboarding = async () => {
-            console.log("userProfile?.uuid", userProfile?.onbording_uuid)
-            setOnboardingId(userProfile?.onbording_uuid)
-            const response:any = await getOnboardingApiRequest(userProfile?.onbording_uuid)
-            if (response) {
-                console.log("response", response?.data?.data)
-                
-            
-                // setOnboardingData(response?.data?.data)
-                setOnboardingData({
-                    name: response?.data?.data?.name,
-                    age: response?.data?.data?.age,
-                    gender: response?.data?.data?.gender || '',
-                    dateOfBirth: response?.data?.data?.date_of_birth,
-                    medicationSideEffects: response?.data?.data?.side_effects_of_medicines,
-                    organizationDifficulty: response?.data?.data?.difficulty_organizing,
-                    memoryIssues: response?.data?.data?.memory_issues,
-                    sleepQuality: response?.data?.data?.sleep_quality,
-                    substanceUse: response?.data?.data?.substance_use,
-                    otherConditions: response?.data?.data?.other_medical_conditions,
-                    moodPatterns: response?.data?.data?.mood_on_most_days,
-                    losingItems: response?.data?.data?.lose_essential_items,
-                    sleepDisorders: response?.data?.data?.history_of_medical?.includes("Sleep Disorders") || false,
-                    asthma: response?.data?.data?.history_of_medical?.includes("Asthma") || false,
-                    anxiety: response?.data?.data?.history_of_medical?.includes("Anxiety Disorders") || false,
-                    depression: response?.data?.data?.history_of_medical?.includes("Depression") || false,
-                    personalityDisorders: response?.data?.data?.history_of_medical?.includes("Personality Disorders") || false,
-                    hypertension: response?.data?.data?.history_of_medical?.includes("Hypertension") || false,
-                    hasOtherMedicalConditions: response?.data?.data?.history_of_medical?.includes("Other Medical Conditions") || false,
-                    otherMedicalConditions: response?.data?.data?.history_of_medical?.find((condition: string) => condition !== "Sleep Disorders" && condition !== "Asthma" && condition !== "Anxiety Disorders" && condition !== "Depression" && condition !== "Personality Disorders" && condition !== "Hypertension") || ""
-                })
-            }
+        if (userProfile?.onbording_uuid) {
+            const fetchOnboarding = async () => {
+                console.log("userProfile?.uuid", userProfile?.onbording_uuid)
+                setOnboardingId(userProfile?.onbording_uuid)
+                const response: any = await getOnboardingApiRequest(userProfile?.onbording_uuid)
+                if (response) {
+                    console.log("response", response?.data?.data)
+
+
+                    // Handle DOB from response - use existing DOB or calculate from age
+                    let responseDateOfBirth = response?.data?.data?.date_of_birth || '';
+                    if (!responseDateOfBirth && response?.data?.data?.age) {
+                        responseDateOfBirth = calculateDateOfBirthFromAge(response.data.data.age);
+                    }
+
+                    setOnboardingData({
+                        name: response?.data?.data?.name,
+                        age: response?.data?.data?.age,
+                        gender: response?.data?.data?.gender || '',
+                        dateOfBirth: responseDateOfBirth,
+                        medicationSideEffects: response?.data?.data?.side_effects_of_medicines,
+                        organizationDifficulty: response?.data?.data?.difficulty_organizing,
+                        memoryIssues: response?.data?.data?.memory_issues,
+                        sleepQuality: response?.data?.data?.sleep_quality,
+                        substanceUse: response?.data?.data?.substance_use,
+                        otherConditions: response?.data?.data?.other_medical_conditions,
+                        moodPatterns: response?.data?.data?.mood_on_most_days,
+                        losingItems: response?.data?.data?.lose_essential_items,
+                        none: response?.data?.data?.history_of_medical?.includes("None") || false,
+                        sleepDisorders: response?.data?.data?.history_of_medical?.includes("Sleep Disorders") || false,
+                        asthma: response?.data?.data?.history_of_medical?.includes("Asthma") || false,
+                        anxiety: response?.data?.data?.history_of_medical?.includes("Anxiety Disorders") || false,
+                        depression: response?.data?.data?.history_of_medical?.includes("Depression") || false,
+                        personalityDisorders: response?.data?.data?.history_of_medical?.includes("Personality Disorders") || false,
+                        hypertension: response?.data?.data?.history_of_medical?.includes("Hypertension") || false,
+                        otherMedicalConditions: response?.data?.data?.history_of_medical?.find((condition: string) => 
+                            condition !== "None" &&
+                            condition !== "Sleep Disorders" && 
+                            condition !== "Asthma" && 
+                            condition !== "Anxiety Disorders" && 
+                            condition !== "Depression" && 
+                            condition !== "Personality Disorders" && 
+                            condition !== "Hypertension"
+                        ) || "",
+                        hasOtherMedicalConditions: (() => {
+                            const otherCondition = response?.data?.data?.history_of_medical?.find((condition: string) => 
+                                condition !== "None" &&
+                                condition !== "Sleep Disorders" && 
+                                condition !== "Asthma" && 
+                                condition !== "Anxiety Disorders" && 
+                                condition !== "Depression" && 
+                                condition !== "Personality Disorders" && 
+                                condition !== "Hypertension"
+                            )
+                            return otherCondition ? otherCondition.trim().length > 0 : false
+                        })()
+                    })
+                }
             }
             fetchOnboarding()
         }
-    }, [userProfile?.uuid])
+    }, [userProfile?.onbording_uuid
+    ])
+    useEffect(() => {
+        if (!userProfile?.onbording_uuid) {
+            // Calculate DOB from age if date_of_birth is not available
+            let calculatedDateOfBirth = userProfile?.date_of_birth || '';
+            if (!calculatedDateOfBirth && userProfile?.age) {
+                calculatedDateOfBirth = calculateDateOfBirthFromAge(userProfile.age);
+            }
+
+            setOnboardingData({
+                name: userProfile?.firstName + ' ' + userProfile?.lastName,
+                age: userProfile?.age || 0,
+                gender: userProfile?.gender || 'male',
+                dateOfBirth: calculatedDateOfBirth,
+                medicationSideEffects: '',
+                organizationDifficulty: '',
+                memoryIssues: '',
+                sleepQuality: '',
+                substanceUse: '',
+                otherConditions: '',
+                moodPatterns: '',
+                losingItems: '',
+                none: false,
+                sleepDisorders: false,
+                asthma: false,
+                anxiety: false,
+                depression: false,
+                personalityDisorders: false,
+                hypertension: false,
+                hasOtherMedicalConditions: false,
+                otherMedicalConditions: ''
+            })
+        }
+    }, [userProfile?.onbording_uuid])
+
 
     return (
         <div className="h-screen overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50">

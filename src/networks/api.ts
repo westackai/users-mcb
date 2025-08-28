@@ -19,11 +19,19 @@ export const authRegisterApiRequest = async (payload :any) => {
 }
 
 
+
 // User Profile API Requests
 export const getUserDetailsApiRequest = async () => {
     const response = await getRequest(ENDPOINTS.GET_USER_DETAILS);
     return response;
 }
+
+
+export const updateUserDetailsApiRequest = async (Id :string, payload :any) => {
+    const response = await postRequest(ENDPOINTS.UPDATE_USER_DETAILS + Id, payload);
+    return response;
+}
+
 
 
 // Onboarding API Requests

@@ -20,6 +20,7 @@ interface PersonalInfoStepProps {
 
 const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({ data, updateData }) => {
   const [showAgeError, setShowAgeError] = useState(false)
+  
 
   const handleInputChange = (field: string, value: string | number) => {
     updateData({ [field]: value })
@@ -138,7 +139,7 @@ const PersonalInfoStep: React.FC<PersonalInfoStepProps> = ({ data, updateData })
               <button
                 key={gender}
                 type="button"
-                onClick={() => handleInputChange('gender', gender)}
+                onClick={() => handleInputChange('gender', gender.toLowerCase())}
                 className={`p-3 border rounded-lg text-center transition-colors duration-200 placeholder:text-gray-400 text-gray-700 ${
                   data.gender === gender.toLowerCase()
                     ? 'border-blue-500 bg-blue-50 text-blue-700'

@@ -1,5 +1,5 @@
 'use client'
- 
+export const runtime = 'edge';
 
 import React, { useState } from 'react'
 import { ChevronLeft } from 'lucide-react'
@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { authRegisterApiRequest, authVerifyOtpApiRequest } from '../../../networks/api'
 import { setToken } from '../../../../_utils/cookies'
 import { useRouter } from 'next/navigation'
+import { toast } from 'react-toastify';
 
 const RegisterPage = () => {
     const router = useRouter()
@@ -63,7 +64,7 @@ const RegisterPage = () => {
 
         setIsLoading(true)
         try {
-            // TODO: Replace with actual OTP sending API call
+
             const payload = {
                 email: formData.email,
                 firstName: formData.firstName,
@@ -73,6 +74,7 @@ const RegisterPage = () => {
                 gender: formData.gender
             }
             const response = await authRegisterApiRequest(payload)
+            console.log("response----", response)
             if(response){
                 console.log('Sending OTP to:', formData.email)
                 setOtpSent(true)
@@ -81,8 +83,8 @@ const RegisterPage = () => {
             }
 
 
-        } catch (error) {
-            console.error('Failed to send OTP:', error)
+        } catch (error : any) {
+            toast.error(error?.response?.data?.message)
         } finally {
             setIsLoading(false)
         }

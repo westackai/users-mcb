@@ -43,7 +43,7 @@ const HealthSymptomsStep: React.FC<HealthSymptomsStepProps> = ({ data, updateDat
               type="radio"
               name={field}
               value={option}
-              checked={data[field as keyof typeof data] === option}
+              checked={(data[field as keyof typeof data] || '') === option}
               onChange={(e) => handleInputChange(field, e.target.value)}
               className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
             />
@@ -76,7 +76,7 @@ const HealthSymptomsStep: React.FC<HealthSymptomsStepProps> = ({ data, updateDat
                   type="radio"
                   name="medicationSideEffects"
                   value={option}
-                  checked={data.medicationSideEffects === option}
+                  checked={(data.medicationSideEffects || '') === option}
                   onChange={(e) => handleInputChange('medicationSideEffects', e.target.value)}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300"
                 />
@@ -133,7 +133,7 @@ const HealthSymptomsStep: React.FC<HealthSymptomsStepProps> = ({ data, updateDat
             Do you have any other medical conditions or take any medications?
           </label>
           <textarea
-            value={data.otherConditions}
+            value={data.otherConditions || ''}
             onChange={(e) => handleInputChange('otherConditions', e.target.value)}
             className="w-full text-gray-700 px-4 py-3 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             placeholder="Please describe any other medical conditions, medications, or relevant health information... (or type 'None' if not applicable)"

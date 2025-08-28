@@ -1,7 +1,7 @@
 'use client'
- 
+export const runtime = 'edge';
 
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
     User,
     Edit2,
@@ -16,26 +16,57 @@ import {
     FileText,
     Camera
 } from 'lucide-react'
+import { useDispatch, useSelector } from 'react-redux';
+import { updateUserDetailsApiRequest } from '@/networks/api';
+import { toast } from 'react-toastify';
+import { getUserDetailsThunk } from '@/lib/Redux/ReduxActions/userActions';
+import { calculateDateOfBirthFromAge, calculateAgeFromDateOfBirth } from '../../../../_utils/general';
+
 
 const ProfilePage = () => {
+    const dispatch = useDispatch()
+    const userProfile = useSelector((state :any)=>state.user.userProfile)
+    console.log(userProfile)
     const [isEditing, setIsEditing] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
     const [formData, setFormData] = useState({
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'john.doe@example.com',
-        phoneNumber: '(555) 123-4567',
-        age: 25,
-        gender: 'male',
+        firstName: userProfile?.firstName || '',
+        lastName: userProfile?.lastName || '',
+        email: userProfile?.email || '',
+        phoneNumber: userProfile?.phoneNumber || '',
+        age: userProfile?.age || '',
+        gender: userProfile?.gender || 'male',
+        dateOfBirth: userProfile?.date_of_birth || '',
     })
     const [originalData, setOriginalData] = useState({ ...formData })
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }))
+        setFormData(prev => {
+            const newData = { ...prev, [name]: value }
+            
+            // Auto-calculate DOB when age changes
+            if (name === 'age' && value && !isNaN(Number(value))) {
+                newData.dateOfBirth = calculateDateOfBirthFromAge(Number(value))
+            }
+            
+            return newData
+        })
+    }
+
+    const handleDateOfBirthChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { value } = e.target
+        setFormData(prev => {
+            const newData = { ...prev, dateOfBirth: value }
+            
+            // Auto-calculate age when DOB changes
+            if (value) {
+                const calculatedAge = calculateAgeFromDateOfBirth(value)
+                newData.age = calculatedAge
+            }
+            
+            return newData
+        })
     }
 
     const handleSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -46,13 +77,7 @@ const ProfilePage = () => {
         }))
     }
 
-    const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        const { name, value } = e.target
-        setFormData(prev => ({
-            ...prev,
-            [name]: value
-        }))
-    }
+
 
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         let value = e.target.value.replace(/\D/g, '')
@@ -70,21 +95,9 @@ const ProfilePage = () => {
         }))
     }
 
-    const handleEmergencyPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        let value = e.target.value.replace(/\D/g, '')
-        if (value.length > 10) value = value.slice(0, 10)
 
-        if (value.length >= 6) {
-            value = `(${value.slice(0, 3)}) ${value.slice(3, 6)}-${value.slice(6)}`
-        } else if (value.length >= 3) {
-            value = `(${value.slice(0, 3)}) ${value.slice(3)}`
-        }
 
-        setFormData(prev => ({
-            ...prev,
-            emergencyPhone: value
-        }))
-    }
+
 
     const handleEdit = () => {
         setIsEditing(true)
@@ -98,9 +111,24 @@ const ProfilePage = () => {
 
     const handleSave = async () => {
         setIsLoading(true)
+
         try {
-            await new Promise(resolve => setTimeout(resolve, 1000))
-            console.log('Updating profile with:', formData)
+            const payload = {
+                firstName: formData.firstName,
+                lastName: formData.lastName,
+                age: formData.age,
+                gender: formData.gender,
+                phoneNumber: formData.phoneNumber,
+                date_of_birth: formData.dateOfBirth,
+            }
+            const response = await updateUserDetailsApiRequest(userProfile?.uuid, payload)
+            if(response.status === 200){
+                toast.success('Profile updated successfully')
+                setIsEditing(false)
+                dispatch(getUserDetailsThunk() as any)
+            }else{
+                toast.error(response.data.message)
+            }
             setOriginalData({ ...formData })
             setIsEditing(false)
         } catch (error) {
@@ -110,6 +138,23 @@ const ProfilePage = () => {
         }
     }
 
+    useEffect(() => {
+        // Calculate DOB from age if date_of_birth is not available
+        let calculatedDateOfBirth = userProfile?.date_of_birth || '';
+        if (!calculatedDateOfBirth && userProfile?.age) {
+            calculatedDateOfBirth = calculateDateOfBirthFromAge(userProfile.age);
+        }
+        
+        setFormData({
+            firstName: userProfile?.firstName || '',
+            lastName: userProfile?.lastName || '',
+            email: userProfile?.email || '',
+            phoneNumber: userProfile?.phoneNumber || '',
+            age: userProfile?.age || '',
+            gender: userProfile?.gender || 'male',
+            dateOfBirth: calculatedDateOfBirth,
+        })
+    }, [userProfile])
     const hasChanges = JSON.stringify(formData) !== JSON.stringify(originalData)
 
     return (
@@ -231,6 +276,20 @@ const ProfilePage = () => {
                                         disabled={!isEditing}
                                         value={formData.age}
                                         onChange={handleInputChange}
+                                        className={`w-full px-3 py-2 text-black border rounded-lg transition-colors ${isEditing
+                                                ? 'border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent'
+                                                : 'border-slate-200 bg-slate-50 text-slate-500'
+                                            }`}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-700 mb-2">Date of Birth</label>
+                                    <input
+                                        name="dateOfBirth"
+                                        type="date"
+                                        disabled={!isEditing}
+                                        value={formData.dateOfBirth}
+                                        onChange={handleDateOfBirthChange}
                                         className={`w-full px-3 py-2 text-black border rounded-lg transition-colors ${isEditing
                                                 ? 'border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-transparent'
                                                 : 'border-slate-200 bg-slate-50 text-slate-500'
