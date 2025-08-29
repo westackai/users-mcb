@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Virtual Consultation",
-  description: "Virtual Consultation",
+  title: "Dr. MCB",
+  description: "Dr. MCB",
 };
 
 export default function RootLayout({
