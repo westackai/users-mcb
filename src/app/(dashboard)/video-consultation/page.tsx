@@ -34,12 +34,21 @@ interface AIAvatar {
     availability: string
     description: string
     aiTraining: string
+    // Additional fields from API
+    uuid?: string
+    _id?: string
+    avatar_id?: string
+    status?: number
+    url?: string
+    questions?: any[]
 }
 
 const VideoConsultationPage = () => {
     const [selectedSpecialty, setSelectedSpecialty] = useState('all')
     const [selectedAvatar, setSelectedAvatar] = useState<AIAvatar | null>(null)
     const [showDetails, setShowDetails] = useState(false)
+    const [avatarList, setAvatarList] = useState<AIAvatar[]>([])
+    const [loading, setLoading] = useState(true)
     const router = useRouter()
     const specialties = [
         { id: 'all', name: 'All Conditions', icon: Activity, color: 'bg-blue-500' },
@@ -51,9 +60,10 @@ const VideoConsultationPage = () => {
         { id: 'sleep', name: 'Sleep Disorders', icon: Brain, color: 'bg-indigo-500' }
     ]
 
-    const aiAvatars: AIAvatar[] = [
+    // Default avatar data structure
+    const defaultAvatarData: AIAvatar[] = [
         {
-            id: '1',
+            id: 'dr-marie',
             name: 'Dr. Marie Claire Bourque',
             specialty: 'Psychiatrist',
             diseaseFocus: ['Anxiety Disorders', 'Depression', 'Stress Management', 'Cognitive Behavioral Therapy'],
@@ -68,8 +78,8 @@ const VideoConsultationPage = () => {
     ]
 
     const filteredAvatars = selectedSpecialty === 'all' 
-        ? aiAvatars 
-        : aiAvatars.filter(avatar => {
+        ? avatarList 
+        : avatarList.filter(avatar => {
            
             return true
         })
@@ -87,8 +97,46 @@ const VideoConsultationPage = () => {
     }
 
     const getAvatarList = async () => {
-        const response = await avatarListApiRequest()
-        console.log(response)
+        try {
+            setLoading(true)
+            const response = await avatarListApiRequest()
+            console.log('Avatar list response:', response?.data?.data)
+            
+            if (response?.data?.data && Array.isArray(response.data.data)) {
+                // Transform API data to match our interface
+                const transformedAvatars: AIAvatar[] = response.data.data.map((avatar: any, index: number) => ({
+                    id: avatar.avatar_id || `avatar-${index}`,
+                    name: avatar.name || `Dr. ${avatar.name || 'AI Specialist'}`,
+                    specialty: 'AI Psychiatrist', // Default specialty
+                    diseaseFocus: ['Mental Health', 'Emotional Support', 'Stress Management', 'Wellness'],
+                    avatarImage: avatar.thumbnailUrl || '/api/placeholder/150/150',
+                    personality: 'Compassionate and empathetic',
+                    expertise: 'AI-powered mental health assessment and therapeutic interventions',
+                    consultationTypes: ['General Consultation', 'Mental Health Assessment', 'Emotional Support', 'Wellness Guidance'],
+                    availability: 'Available 24/7',
+                    description: `AI-powered specialist ${avatar.name} providing mental health support and therapeutic guidance.`,
+                    aiTraining: 'Trained on comprehensive mental health cases and therapeutic techniques',
+                    // Additional fields from API
+                    uuid: avatar.uuid,
+                    _id: avatar._id,
+                    avatar_id: avatar.avatar_id,
+                    status: avatar.status,
+                    url: avatar.url,
+                    questions: avatar.questions
+                }))
+                
+                setAvatarList(transformedAvatars)
+            } else {
+                // Fallback to default data if API doesn't return expected format
+                setAvatarList(defaultAvatarData)
+            }
+        } catch (error) {
+            console.error('Error fetching avatar list:', error)
+            // Fallback to default data on error
+            setAvatarList(defaultAvatarData)
+        } finally {
+            setLoading(false)
+        }
     }
 
     useEffect(() => {
@@ -131,8 +179,44 @@ const VideoConsultationPage = () => {
                 </div> */}
 
                 {/* AI Avatar Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredAvatars.map((avatar) => (
+                {loading ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {[1, 2, 3].map((index) => (
+                            <div key={index} className="bg-white rounded-xl border border-gray-200 flex flex-col h-[500px] animate-pulse">
+                                <div className="p-6 border-b border-gray-200">
+                                    <div className="flex items-start justify-between mb-4">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="w-16 h-16 bg-gray-200 rounded-full"></div>
+                                            <div>
+                                                <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
+                                                <div className="h-3 bg-gray-200 rounded w-24"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="h-3 bg-gray-200 rounded w-20 mb-3"></div>
+                                    <div className="space-y-2">
+                                        <div className="h-2 bg-gray-200 rounded w-16"></div>
+                                        <div className="flex gap-1">
+                                            <div className="h-6 bg-gray-200 rounded-full w-20"></div>
+                                            <div className="h-6 bg-gray-200 rounded-full w-24"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="p-6 flex-1">
+                                    <div className="h-4 bg-gray-200 rounded w-40 mb-3"></div>
+                                    <div className="space-y-2 mb-4">
+                                        <div className="h-3 bg-gray-200 rounded w-32"></div>
+                                        <div className="h-3 bg-gray-200 rounded w-36"></div>
+                                        <div className="h-3 bg-gray-200 rounded w-28"></div>
+                                    </div>
+                                    <div className="h-10 bg-gray-200 rounded w-full"></div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {filteredAvatars.map((avatar) => (
                         <div
                             key={avatar.id}
                             className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition-all duration-200 cursor-pointer group flex flex-col h-[500px]"
@@ -195,7 +279,11 @@ const VideoConsultationPage = () => {
                                 
                                 <div className="mt-auto">
                                     <button 
-                                        onClick={() => router.push(`/video-consultation/${avatar.id}`)}
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            const avatarId = avatar.avatar_id || avatar.id
+                                            router.push(`/video-consultation/${avatar.id}?avatar_id=${avatarId}`)
+                                        }}
                                         className="w-full bg-white border-2 border-black text-black px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium"
                                     >
                                         Start Consultation
@@ -205,9 +293,10 @@ const VideoConsultationPage = () => {
                         </div>
                     ))}
                 </div>
+                )}
 
                 {/* No Results */}
-                {filteredAvatars.length === 0 && (
+                {!loading && filteredAvatars.length === 0 && (
                     <div className="text-center py-12">
                         <Bot className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                         <h3 className="text-lg font-medium text-black mb-2">No AI available</h3>

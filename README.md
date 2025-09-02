@@ -1,63 +1,138 @@
-# Next.js Framework Starter
+# Dr. MCB User Application
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/cloudflare/templates/tree/main/next-starter-template)
+A comprehensive healthcare application with AI-powered video consultation capabilities.
 
-<!-- dash-content-start -->
+## Features
 
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app). It's deployed on Cloudflare Workers as a [static website](https://developers.cloudflare.com/workers/static-assets/).
+### Video Consultation with AI Avatars
+- **Real-time Video Streaming**: Connect with AI healthcare professionals through live video calls
+- **Voice Recognition**: Advanced speech-to-text using Deepgram for natural conversations
+- **Custom LLM Integration**: AI-powered responses with conversation memory
+- **Interruption Support**: Users can interrupt AI responses for more natural interactions
+- **Text Chat Fallback**: Text-based chat when voice is not available
 
-This template uses [OpenNext](https://opennext.js.org/) via the [OpenNext Cloudflare adapter](https://opennext.js.org/cloudflare), which works by taking the Next.js build output and transforming it, so that it can run in Cloudflare Workers.
-
-<!-- dash-content-end -->
-
-Outside of this repo, you can start a new project with this template using [C3](https://developers.cloudflare.com/pages/get-started/c3/) (the `create-cloudflare` CLI):
-
-```bash
-npm create cloudflare@latest -- --template=cloudflare/templates/next-starter-template
-```
-
-A live public deployment of this template is available at [https://next-starter-template.templates.workers.dev](https://next-starter-template.templates.workers.dev)
+### Available AI Avatars
+- **Dr. Marie Claire Bourque**: AI Psychiatrist specializing in mental health and emotional support
+- **Dr. Thaddeus**: AI Therapist expert in cognitive behavioral therapy
 
 ## Getting Started
 
-First, run:
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- Environment variables configured
 
-```bash
-npm install
-# or
-yarn install
-# or
-pnpm install
-# or
-bun install
+### Environment Variables
+Create a `.env.local` file with the following variables:
+
+```env
+NEXT_PUBLIC_BASE_API_URL=your_api_base_url
+NEXT_PUBLIC_DEEPGRAM_API_KEY=your_deepgram_api_key
 ```
 
-Then run the development server (using the package manager of your choice):
+### Installation
 
+1. Clone the repository
+```bash
+git clone <repository-url>
+cd users-mcb
+```
+
+2. Install dependencies
+```bash
+npm install
+```
+
+3. Run the development server
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Usage
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+### Video Consultation
 
-## Deploying To Production
+1. **Navigate to Video Consultation**: Go to `/video-consultation`
+2. **Select an Avatar**: Choose from available AI healthcare professionals
+3. **Start Session**: Click "Start Consultation" to begin
+4. **Connect**: The system will automatically create a session and connect to the avatar
+5. **Interact**: Use voice or text to communicate with the AI
 
-| Command                           | Action                                       |
-| :-------------------------------- | :------------------------------------------- |
-| `npm run build`                   | Build your production site                   |
-| `npm run preview`                 | Preview your build locally, before deploying |
-| `npm run build && npm run deploy` | Deploy your production site to Cloudflare    |
-| `npm wrangler tail`               | View real-time logs for all Workers          |
+### Direct Access
+You can also access specific avatars directly:
+- Dr. Marie: `/video-consultation/dr-marie?avatar_id=dvp_Alinna_emotionsit_20250116`
+- Dr. Thaddeus: `/video-consultation/dr-thaddeus?avatar_id=Thaddeus_ProfessionalLook2_public`
 
-## Learn More
+## Technical Architecture
 
-To learn more about Next.js, take a look at the following resources:
+### Components
+- **AvatarStreemComponent**: Main video consultation component with real-time streaming
+- **StreamingAvatarProvider**: Context provider for avatar session management
+- **Video Consultation Pages**: Route-based pages for different consultation types
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Technologies Used
+- **Next.js 15**: React framework with App Router
+- **Agora RTC**: Real-time video communication
+- **Deepgram**: Speech recognition and transcription
+- **Tailwind CSS**: Styling and UI components
+- **TypeScript**: Type safety and development experience
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+### API Integration
+- **Session Management**: Create and manage avatar sessions
+- **LLM Processing**: Custom AI responses through API integration
+- **Message Handling**: Real-time message exchange with avatars
+
+## Features in Detail
+
+### Voice Recognition
+- Real-time speech-to-text conversion
+- Automatic interruption detection
+- Speech completion waiting
+- Echo cancellation and noise suppression
+
+### Video Streaming
+- High-quality video streaming
+- Automatic connection management
+- Fallback handling for connection issues
+- Session cleanup on disconnect
+
+### Chat Interface
+- Real-time message exchange
+- Typing indicators
+- Message history
+- Voice and text input support
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Microphone Access Denied**
+   - Ensure browser permissions are granted
+   - Check if microphone is available and working
+
+2. **Connection Issues**
+   - Verify environment variables are set correctly
+   - Check network connectivity
+   - Ensure API endpoints are accessible
+
+3. **Video Not Loading**
+   - Check browser compatibility
+   - Ensure camera permissions are granted
+   - Verify Agora credentials are valid
+
+### Debug Mode
+Enable debug logging by checking browser console for detailed error messages and connection status.
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License.

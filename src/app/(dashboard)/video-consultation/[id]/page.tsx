@@ -1,289 +1,173 @@
-'use client'
+"use client";
 export const runtime = 'edge';
 
-import React, { useState, useEffect, useRef } from 'react'
-import { 
-    Mic, 
-    MicOff, 
-    Video, 
-    VideoOff, 
-    Phone, 
-    PhoneOff, 
-    MessageCircle, 
-    Send,
-    Settings,
-    Volume2,
-    VolumeX,
-    Maximize,
-    Minimize,
-    Bot,
-    User,
-    Clock
-} from 'lucide-react'
+import React, { useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 
-interface Message {
-    id: string
-    text: string
-    sender: 'user' | 'ai'
-    timestamp: Date
-}
-
-
-
-const VideoConsultationPage = () => {
-    const [isMuted, setIsMuted] = useState(false)
-    const [isVideoOn, setIsVideoOn] = useState(true)
-    const [isCallActive, setIsCallActive] = useState(true)
-    const [isFullscreen, setIsFullscreen] = useState(false)
-    const [isVolumeOn, setIsVolumeOn] = useState(true)
-    const [chatMessage, setChatMessage] = useState('')
-    const [messages, setMessages] = useState<Message[]>([
+// Mock data for avatar information
+const getAvatarData = (id: string) => {
+    const avatars = [
         {
-            id: '1',
-            text: 'Hello! I\'m Dr. Marie Claire Bourque. How can I help you today?',
-            sender: 'ai',
-            timestamp: new Date()
+            "avatar_id": "2d1ed29014374809a9a8eab28b6aaa5f",
+            "created_at": 1749719385,
+            "is_public": false,
+            "status": "ACTIVE",
+            "name": "Mental Health Assistant",
+            "image": "/avatar-1.png"
+        },
+        {
+            "avatar_id": "Thaddeus_ProfessionalLook2_public",
+            "created_at": 1744264310,
+            "is_public": true,
+            "status": "ACTIVE",
+            "name": "Dr. Thaddeus",
+            "image": "/avatar-2.avif"
         }
-    ])
-    const [callDuration, setCallDuration] = useState(0)
-    const [isTyping, setIsTyping] = useState(false)
+    ];
 
-    const videoRef = useRef<HTMLVideoElement>(null)
-    const chatEndRef = useRef<HTMLDivElement>(null)
+    return avatars.find(avatar => avatar.avatar_id === id) || avatars[0];
+};
 
-    // Simulate call duration timer
-    useEffect(() => {
-        const timer = setInterval(() => {
-            setCallDuration(prev => prev + 1)
-        }, 1000)
+import { StreamingAvatarProvider } from '@/components/logic';
+import AvatarCallComponent from "@/components/AvatarStreemComponent";
+import { createSessionApiRequest } from "@/networks/api";
 
-        return () => clearInterval(timer)
-    }, [])
+// Inner component that has access to the streaming avatar context
+function TalkPageContent({ avatarData, avatarId }: { avatarData: any, avatarId: string }) {
+    const [sessionData, setSessionData] = useState<any>(null);
+    const [sessionId, setSessionId] = useState<any>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const sessionRunSingle = useRef(false);
 
-    // Auto-scroll chat to bottom
-    useEffect(() => {
-        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }, [messages])
-
-    const formatTime = (seconds: number) => {
-        const mins = Math.floor(seconds / 60)
-        const secs = seconds % 60
-        return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
-    }
-
-    const handleSendMessage = () => {
-        if (chatMessage.trim()) {
-            const newMessage: Message = {
-                id: Date.now().toString(),
-                text: chatMessage,
-                sender: 'user',
-                timestamp: new Date()
-            }
-            setMessages(prev => [...prev, newMessage])
-            setChatMessage('')
+    const createSession = async () => {
+        try {
+            setIsLoading(true);
+            setError(null);
             
-            // Simulate AI response
-            setIsTyping(true)
-            setTimeout(() => {
-                const aiResponse: Message = {
-                    id: (Date.now() + 1).toString(),
-                    text: 'Thank you for sharing that. I understand how challenging this situation must be for you. Let me ask you a few more questions to better understand your needs.',
-                    sender: 'ai',
-                    timestamp: new Date()
-                }
-                setMessages(prev => [...prev, aiResponse])
-                setIsTyping(false)
-            }, 2000)
+            const payload = {
+                avatar_id: 'dvp_Alinna_emotionsit_20250116',
+                duration: 17,
+                language: "en", 
+            }
+
+            console.log('Creating session with payload:', payload);
+            const response = await createSessionApiRequest(JSON.stringify(payload));
+            console.log('API Response:', response);
+            
+            // Check if response has the expected structure
+            if (!response || !response.data) {
+                throw new Error('Invalid API response: No data received');
+            }
+
+            // Log the full response structure for debugging
+            console.log('Response data structure:', JSON.stringify(response.data, null, 2));
+
+            // Handle nested response structure: response.data.data.credentials
+            const responseData = response.data.data || response.data;
+            
+            // Check if credentials exist
+            if (!responseData.credentials) {
+                console.error('No credentials in response:', responseData);
+                throw new Error('No credentials received from API. Please check your avatar configuration.');
+            }
+
+            // Validate required credential fields
+            const credentials = responseData.credentials;
+            const requiredFields = ['agora_app_id', 'agora_channel', 'agora_token', 'agora_uid'];
+            const missingFields = requiredFields.filter(field => !credentials[field]);
+            
+            if (missingFields.length > 0) {
+                console.error('Missing credential fields:', missingFields);
+                throw new Error(`Missing required credentials: ${missingFields.join(', ')}`);
+            }
+
+            // Structure the session data to match AvatarCallComponent expectations
+            const sessionData = {
+                session_id: responseData._id || responseData.session_id,
+                credentials: credentials
+            };
+            
+            console.log('Structured session data:', sessionData);
+            setSessionData(sessionData);
+            setSessionId(responseData._id);
+        } catch (err) {
+            console.error('Error creating session:', err);
+            const errorMessage = err instanceof Error ? err.message : 'Failed to create session. Please try again.';
+            setError(errorMessage);
+        } finally {
+            setIsLoading(false);
         }
     }
 
-    const handleKeyPress = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault()
-            handleSendMessage()
+    useEffect(() => {
+        if (!sessionRunSingle.current) {
+            createSession();
+            sessionRunSingle.current = true;
         }
+    }, []); // Empty dependency array ensures it runs only once
+
+    // Loading state
+    if (isLoading) {
+        return (
+            <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+                <div className="text-center text-slate-600">
+                    <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <h2 className="text-xl font-semibold mb-2">Creating Session</h2>
+                    <p className="text-slate-500">Please wait while we set up your avatar session...</p>
+                </div>
+            </div>
+        );
     }
 
-    const toggleMute = () => setIsMuted(!isMuted)
-    const toggleVideo = () => setIsVideoOn(!isVideoOn)
-    const toggleCall = () => setIsCallActive(!isCallActive)
-    const toggleFullscreen = () => setIsFullscreen(!isFullscreen)
-    const toggleVolume = () => setIsVolumeOn(!isVolumeOn)
+    // Error state
+    if (error) {
+        return (
+            <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+                <div className="text-center text-slate-600 max-w-md mx-auto">
+                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                        </svg>
+                    </div>
+                    <h2 className="text-xl font-semibold mb-2 text-red-600">Session Creation Failed</h2>
+                    <p className="text-slate-500 mb-4">{error}</p>
+                    <button
+                        onClick={() => {
+                            sessionRunSingle.current = false;
+                            createSession();
+                        }}
+                        className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                    >
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
-        <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex">
-            {/* Left Side - Video Stream */}
-            <div className="flex-1 flex flex-col">
-                {/* Video Header */}
-                <div className="bg-white/80 backdrop-blur-sm border-b border-slate-200/50 text-slate-900 p-4 flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                        <div className="flex items-center space-x-2">
-                            <Bot className="h-5 w-5 text-emerald-500" />
-                            <span className="font-medium text-slate-900">Dr. Marie Claire Bourque</span>
-                        </div>
-                        <div className="flex items-center space-x-2 text-sm text-slate-600">
-                            <Clock className="h-4 w-4" />
-                            <span>{formatTime(callDuration)}</span>
-                        </div>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <button
-                            onClick={toggleVolume}
-                            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-                        >
-                            {isVolumeOn ? <Volume2 className="h-5 w-5 text-slate-600" /> : <VolumeX className="h-5 w-5 text-slate-600" />}
-                        </button>
-                        <button
-                            onClick={toggleFullscreen}
-                            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-                        >
-                            {isFullscreen ? <Minimize className="h-5 w-5 text-slate-600" /> : <Maximize className="h-5 w-5 text-slate-600" />}
-                        </button>
-                        <button
-                            onClick={toggleFullscreen}
-                            className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
-                        >
-                            <Settings className="h-5 w-5 text-slate-600" />
-                        </button>
-                    </div>
-                </div>
-
-                {/* Video Stream */}
-                <div className="flex-1 bg-gradient-to-br from-slate-100 to-blue-100 relative flex items-center justify-center">
-                    <div className="relative w-full h-full">
-                        {/* Avatar Video Placeholder */}
-                        <div className="w-full h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
-                            <div className="text-center text-slate-900">
-                                <div className="w-32 h-32 bg-white border-2 border-slate-200 rounded-full flex items-center justify-center mx-auto mb-4 shadow">
-                                    <Bot className="h-16 w-16 text-blue-600" />
-                                </div>
-                                <h2 className="text-2xl font-semibold mb-2">Dr. Marie Claire Bourque</h2>
-                                <p className="text-lg text-slate-600 opacity-90">AI Psychiatrist</p>
-                                <div className="mt-4 flex items-center justify-center space-x-2">
-                                    <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
-                                    <span className="text-sm text-slate-700">Live</span>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                {/* Video Controls */}
-                <div className="bg-white/80 backdrop-blur-sm border-t border-slate-200/50 p-6 flex items-center justify-center space-x-4">
-                    <button
-                        onClick={toggleMute}
-                        className={`p-4 rounded-full transition-all duration-200 ${
-                            isMuted 
-                                ? 'bg-red-500 hover:bg-red-600' 
-                                : 'bg-slate-200 hover:bg-slate-300'
-                        }`}
-                    >
-                        {isMuted ? <MicOff className="h-6 w-6 text-white" /> : <Mic className="h-6 w-6 text-slate-700" />}
-                    </button>
-
-                    <button
-                        onClick={toggleVideo}
-                        className={`p-4 rounded-full transition-all duration-200 ${
-                            !isVideoOn 
-                                ? 'bg-red-500 hover:bg-red-600' 
-                                : 'bg-slate-200 hover:bg-slate-300'
-                        }`}
-                    >
-                        {isVideoOn ? <Video className="h-6 w-6 text-slate-700" /> : <VideoOff className="h-6 w-6 text-white" />}
-                    </button>
-
-                    <button
-                        onClick={toggleCall}
-                        className={`p-6 rounded-full transition-all duration-200 ${
-                            isCallActive 
-                                ? 'bg-red-500 hover:bg-red-600' 
-                                : 'bg-emerald-500 hover:bg-emerald-600'
-                        }`}
-                    >
-                        {isCallActive ? <PhoneOff className="h-8 w-8 text-white" /> : <Phone className="h-8 w-8 text-white" />}
-                    </button>
-                </div>
-            </div>
-
-            {/* Right Side - Chat */}
-            <div className="w-96 bg-white/80 backdrop-blur-sm flex flex-col border-l border-slate-200/50">
-                {/* Chat Header */}
-                <div className="bg-white border-b border-gray-300 p-3">
-                    <div className="flex items-center space-x-3">
-                        <div className="w-10 h-10 bg-white border-2 border-gray-300 rounded-full flex items-center justify-center">
-                            <Bot className="h-5 w-5 text-black" />
-                        </div>
-                        <div>
-                            <h3 className="font-semibold text-black">Dr. Marie Claire Bourque</h3>
-                            <p className="text-sm text-gray-600">AI Psychiatrist</p>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Chat Messages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                    {messages.map((message) => (
-                        <div
-                            key={message.id}
-                            className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                        >
-                            <div
-                                className={`max-w-xs px-4 py-2 rounded-lg ${
-                                    message.sender === 'user'
-                                        ? 'bg-gradient-to-r from-blue-500 to-indigo-500 text-white'
-                                        : 'bg-slate-100 text-slate-900'
-                                }`}
-                            >
-                                <p className="text-sm">{message.text}</p>
-                                <p className={`text-xs mt-1 ${
-                                    message.sender === 'user' ? 'text-blue-100' : 'text-slate-500'
-                                }`}>
-                                    {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                </p>
-                            </div>
-                        </div>
-                    ))}
-                    
-                    {isTyping && (
-                        <div className="flex justify-start">
-                            <div className="bg-slate-100 px-4 py-2 rounded-lg">
-                                <div className="flex space-x-1">
-                                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce"></div>
-                                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                                    <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                    
-                    <div ref={chatEndRef} />
-                </div>
-
-                {/* Chat Input */}
-                <div className="p-4 border-t border-slate-200/50">
-                    <div className="flex space-x-2">
-                        <textarea
-                            id="chatMessage"
-                            value={chatMessage}
-                            onChange={(e) => setChatMessage(e.target.value)}
-                            onKeyPress={handleKeyPress}
-                            placeholder="Type your message..."
-                            className="flex-1 resize-none border placeholder:text-slate-400 text-slate-900 border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white/80 backdrop-blur-sm"
-                            rows={2}
-                        />
-                        <button
-                            onClick={handleSendMessage}
-                            disabled={!chatMessage.trim()}
-                            className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
-                        >
-                            <Send className="h-5 w-5" />
-                        </button>
-                    </div>
-                </div>
-            </div>
+        <div>
+            {
+                sessionData && (
+                    <AvatarCallComponent sessionData={sessionData} />
+                )
+            }
         </div>
-    )
+    );
 }
 
-export default VideoConsultationPage
+export default function TalkWithAvatarPage({ params }: { params: Promise<{ id: string }> }) {
+    const resolvedParams = React.use(params);
+    const searchParams = useSearchParams();
+    const avatarId = searchParams.get('avatar_id') || 'dvp_Alinna_emotionsit_20250116'; // Default fallback
+    const avatarData = getAvatarData(avatarId);
+
+    return (
+        <div className="w-full min-h-screen bg-gray-50 chat-interface-active">
+            <StreamingAvatarProvider basePath={process.env.NEXT_PUBLIC_BASE_API_URL}>
+                <TalkPageContent avatarData={avatarData} avatarId={avatarId} />
+            </StreamingAvatarProvider>
+        </div>
+    );
+} 

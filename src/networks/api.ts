@@ -52,9 +52,33 @@ export const onboardingUpdateApiRequest = async (Id :string, payload :any) => {
 
 // Avatar List API Requests
 export const avatarListApiRequest = async () => {
-    const payload = {
-        form : 2
-    }
-    const response = await getRequest(ENDPOINTS.AVATAR_LIST , payload);
+    const response = await getRequest(ENDPOINTS.AVATAR_LIST);
+    return response;
+}
+
+
+export const createSessionApiRequest = (payload: any) => {
+    return postRequest(ENDPOINTS.AVATAR_SESSION_CREATE, payload);
+  };
+
+export const avatarEndSessionApiRequest = async (payload :any) => {
+    const response = await postRequest(ENDPOINTS.AVATAR_END_SESSION, payload);
+    return response;
+}
+
+export const endSessionApiRequest = async (payload :any) => {
+    const response = await postRequest(ENDPOINTS.AVATAR_END_SESSION, payload);
+    return response;
+}
+
+export const sendMessageToAvatarApiRequest = async (payload :any) => {
+    const response = await postRequest(ENDPOINTS.AVATAR_MESSAGE, payload);
+    return response;
+}
+
+
+// Conversation Summary API Requests
+export const conversationSummaryApiRequest = async (payload :any) => {
+    const response = await postRequest(ENDPOINTS.CONVERSATION_SUMMARY, payload);
     return response;
 }

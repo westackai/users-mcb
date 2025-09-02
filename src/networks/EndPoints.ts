@@ -7,5 +7,11 @@ export const ENDPOINTS = {
     ONBOARDING: "onbording/create",
     GET_ONBOARDING: "onbording/id/",
     UPDATE_ONBOARDING: "onbording/update/",
-    AVATAR_LIST: "akool/avatar/list",
+    AVATAR_LIST: "avatar/list",
+    AVATAR_DETAILS:"avatar/id/",
+    AVATAR_MESSAGE:"conversation/create/response",
+    AVATAR_CREATE:"avatar/create",
+    AVATAR_END_SESSION:"avatar/session/close",
+    AVATAR_SESSION_CREATE:"avatar/session/create",
+    CONVERSATION_SUMMARY:"conversation/summary",
 }
