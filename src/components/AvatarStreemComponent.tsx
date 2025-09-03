@@ -105,6 +105,7 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData ,
     const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
     const [isTyping, setIsTyping] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [endSessionConversationId, setEndSessionConversationId] = useState<string>("");
     const [agoraLoaded, setAgoraLoaded] = useState(false);
     const [isAvatarSpeaking, setIsAvatarSpeaking] = useState(false);
     const [avatarResponse, setAvatarResponse] = useState('');
@@ -718,7 +719,7 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData ,
             if (!client || client.connectionState !== 'CONNECTED') {
                 toast.error('Connection lost. Please reconnect to continue.');
                 conversationSummaryApiRequest({
-                    conversation_id: conversationId
+                    conversation_id: endSessionConversationId
                 });
                 return;
             }
@@ -738,6 +739,7 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData ,
                     knowledgeBase_id: "23e620d9-ade8-4978-a91e-02856c461607"
                 }
                 response = await sendMessageToAvatarApiRequest(payload);
+                setEndSessionConversationId(response.data.data.conversation_id);
                 const newConversationId = response.data.data.conversation_id;
                 setConversationId(newConversationId);
                 conversationIdRef.current = newConversationId;
@@ -748,6 +750,7 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData ,
                     knowledgeBase_id: "23e620d9-ade8-4978-a91e-02856c461607"
                 }
                 response = await sendMessageToAvatarApiRequest(payload);
+                setEndSessionConversationId(response.data.data.conversation_id);
             }
             console.log('LLM Response:', response);
 
@@ -826,11 +829,15 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData ,
                 agoraClient.current = null;
             }
             // Close session
+            const finalConversationId = conversationIdRef.current || conversationId;
+            console.log("conversationId------------================", finalConversationId);
             if (sessionData?.session_id) {
                 try {
-                    await endSessionApiRequest({session_id : sessionData.session_id});
-                    console.log('Conversation ID:-=-=-=-', conversationId);
-                    await conversationSummaryApiRequest({conversation_id : conversationId});
+                    const payload = {
+                        session_id: sessionData.session_id
+                    }
+                    await endSessionApiRequest(payload);
+                    await conversationSummaryApiRequest({conversation_id : finalConversationId || ''});
                 } catch (error) {
                     console.error('Error closing session:', error);
                 }

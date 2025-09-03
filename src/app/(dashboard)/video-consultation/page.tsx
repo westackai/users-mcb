@@ -219,7 +219,7 @@ const VideoConsultationPage = () => {
                         {filteredAvatars.map((avatar) => (
                         <div
                             key={avatar.id}
-                            className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition-all duration-200 cursor-pointer group flex flex-col h-[500px]"
+                            className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition-all duration-200  group flex flex-col h-[500px]"
                             onClick={() => handleAvatarSelect(avatar)}
                         >
                             {/* Avatar Header */}
@@ -284,7 +284,7 @@ const VideoConsultationPage = () => {
                                             const avatarId = avatar.avatar_id || avatar.id
                                             router.push(`/video-consultation/${avatar.id}?avatar_id=${avatarId}`)
                                         }}
-                                        className="w-full bg-white border-2 border-black text-black px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium"
+                                        className="w-full cursor-pointer bg-white border-2 border-black text-black px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium"
                                     >
                                         Start Consultation
                                     </button>
