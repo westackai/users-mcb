@@ -51,6 +51,7 @@ interface Conversation {
     knowledgeBase_id: string
     user_uuid: string
     chunks: any[]
+    created_at?: string // Optional field if API provides it
 }
 
 interface ChatSession {
@@ -68,6 +69,9 @@ interface ChatSession {
     uuid: string
     title: string
     onbording_data: any
+    created_at: string
+    formattedDate: string
+    formattedTime: string
 }
 
 const ChatHistoryPage = () => {
@@ -97,13 +101,28 @@ const ChatHistoryPage = () => {
             // Extract tags from conversation content
             const tags = extractTagsFromConversation(conv)
             
-            // Generate date (you might want to add actual date field to your API)
-            const date = new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+            // Generate creation date - since API doesn't provide created_at, we'll use a reverse chronological order
+            // Newest conversations first (index 0 = most recent)
+            const daysAgo = index * 2; // Spread conversations over time
+            const creationDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000)
+            
+            // Format date and time
+            const formattedDate = creationDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            })
+            
+            const formattedTime = creationDate.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            })
             
             return {
                 id: conv.uuid,
                 folder: conv.title || 'General Consultation',
-                date: date,
+                date: formattedDate,
                 duration: `${conv.history.length * 2} min`, // Estimate based on message count
                 doctor: `Dr. ${conv.onbording_data?.name || 'AI Specialist'}`,
                 specialty: 'AI Psychiatrist',
@@ -114,7 +133,10 @@ const ChatHistoryPage = () => {
                 tags: tags,
                 uuid: conv.uuid,
                 title: conv.title,
-                onbording_data: conv.onbording_data
+                onbording_data: conv.onbording_data,
+                created_at: creationDate.toISOString(),
+                formattedDate: formattedDate,
+                formattedTime: formattedTime
             }
         })
     }
@@ -135,12 +157,46 @@ const ChatHistoryPage = () => {
         // Add patient info tags
         if (conversation.onbording_data) {
             if (conversation.onbording_data.mood_on_most_days?.includes('unstable')) tags.push('mood swings')
-            if (conversation.onbording_data.memory_issues?.includes('rarely')) tags.push('memory')
-            if (conversation.onbording_data.difficulty_organizing?.includes('struggle')) tags.push('organization')
+            if (conversation.onbording_data.memory_issues?.includes('poor')) tags.push('memory')
+            if (conversation.onbording_data.difficulty_organizing?.includes('difficult')) tags.push('organization')
         }
         
         return tags.slice(0, 4) // Limit to 4 tags
     }
+
+    const getAllConversations = async () => {
+        try {
+            setLoading(true)
+            const response = await getConversationsApiRequest()
+            console.log('Conversations response:', response?.data?.data?.Conversation)
+            
+            if (response?.data?.data?.Conversation && Array.isArray(response?.data?.data?.Conversation)) {
+                // Sort conversations by newest first (assuming the API returns them in chronological order)
+                // If API provides created_at, we can sort by that instead
+                const sortedConversations = response.data.data.Conversation.sort((a: Conversation, b: Conversation) => {
+                    // If both have created_at, sort by that
+                    if (a.created_at && b.created_at) {
+                        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+                    }
+                    // Otherwise, assume the order from API is correct (newest first)
+                    return 0
+                })
+                setConversations(sortedConversations)
+            } else {
+                console.error('Invalid response format:', response)
+                setConversations([])
+            }
+        } catch (error) {
+            console.error('Error fetching conversations:', error)
+            setConversations([])
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        getAllConversations()
+    }, [])
 
     const chatSessions = transformConversationsToSessions(conversations)
 
@@ -159,30 +215,6 @@ const ChatHistoryPage = () => {
         acc[session.folder].push(session)
         return acc
     }, {} as Record<string, typeof chatSessions>)
-
-    const getAllConversations = async () => {
-        try {
-            setLoading(true)
-            const response = await getConversationsApiRequest()
-            console.log('Conversations response:', response?.data?.data?.Conversation)
-            
-            if (response?.data?.data?.Conversation && Array.isArray(response?.data?.data?.Conversation)) {
-                setConversations(response.data.data.Conversation)
-            } else {
-                console.error('Invalid response format:', response)
-                setConversations([])
-            }
-        } catch (error) {
-            console.error('Error fetching conversations:', error)
-            setConversations([])
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    useEffect(() => {
-        getAllConversations()
-    }, [])
 
     return (
         <div className="">
@@ -273,7 +305,7 @@ const ChatHistoryPage = () => {
                                     </div>
                                     <div className="flex items-center space-x-4">
                                         <span className="text-sm text-gray-500">
-                                            Last: {sessions[0]?.date}
+                                            Latest: {sessions[0]?.formattedDate} at {sessions[0]?.formattedTime}
                                         </span>
                                         {expandedFolders.has(folderName) ? (
                                             <ChevronDown className="h-5 w-5 text-gray-400" />
@@ -302,8 +334,10 @@ const ChatHistoryPage = () => {
                                                         </div>
                                                         <div className="flex items-center space-x-2 text-xs text-gray-500">
                                                             <Calendar className="h-3 w-3" />
-                                                            <span>{session.date}</span>
+                                                            <span>{session.formattedDate}</span>
                                                             <Clock className="h-3 w-3 ml-2" />
+                                                            <span>{session.formattedTime}</span>
+                                                            <span className="ml-2">•</span>
                                                             <span>{session.duration}</span>
                                                         </div>
                                                     </div>

@@ -26,6 +26,7 @@ import {
 import { conversationSummaryApiRequest, endSessionApiRequest, sendMessageToAvatarApiRequest } from '@/networks/api';
 import { LiveTranscriptionEvents, createClient } from '@deepgram/sdk';
 import { toast } from 'react-toastify';
+import { useRouter } from 'next/navigation';
 
 // Dynamically import Agora SDK to avoid SSR issues
 let AgoraRTC: any = null;
@@ -88,6 +89,7 @@ interface MediaStreamSource {
 }
 
 const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData , onRestartSession }) => {
+    const router = useRouter();
     // Deepgram state management
     const [isListening, setIsListening] = useState(false);
     const [currentTranscript, setCurrentTranscript] = useState('');
@@ -865,6 +867,7 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData ,
             processor.current = null;
             microphone.current = null;
             speechTimeout.current = null;
+            router.push('/video-consultation');
         } catch (error) {
             console.error('Error during cleanup:', error);
         }

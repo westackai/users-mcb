@@ -24,6 +24,7 @@ import {
 import { removeToken } from '../../_utils/cookies'
 import { useRouter } from 'next/navigation'
 import { useSelector } from 'react-redux'
+import Image from 'next/image'
 
 const SideBar = () => {
     const router = useRouter()
@@ -164,8 +165,11 @@ const SideBar = () => {
                     <div className="p-4 border-b border-gray-200 transition-all duration-300">
                         <div className="flex items-center justify-between">
                             {!isCollapsed && (<div className={`flex items-center space-x-3 transition-all duration-300 ${isCollapsed ? 'w-0 overflow-hidden' : 'w-auto'}`}>
-                                <div className="h-8 w-8 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110 flex-shrink-0">
-                                    <Stethoscope className="h-5 w-5 text-white" />
+                                <div className=" flex items-center justify-center transition-all duration-300 hover:scale-110 flex-shrink-0">
+                                    <div className='relative h-10 w-10'>
+
+                                    <Image src="/logo.svg" fill alt="logo" />
+                                    </div>
                                 </div>
                                 <span className={`text-lg font-bold text-gray-900 transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'}`}>
                                     Dr. MCB
