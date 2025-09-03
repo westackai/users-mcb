@@ -124,7 +124,7 @@ const ChatHistoryPage = () => {
                 folder: conv.title || 'General Consultation',
                 date: formattedDate,
                 duration: `${conv.history.length * 2} min`, // Estimate based on message count
-                doctor: `Dr. ${conv.onbording_data?.name || 'AI Specialist'}`,
+                doctor: `Dr. MCB`,
                 specialty: 'AI Psychiatrist',
                 summary: conv.summary || firstMessage.substring(0, 100) + '...',
                 chatCount: conv.history.length,

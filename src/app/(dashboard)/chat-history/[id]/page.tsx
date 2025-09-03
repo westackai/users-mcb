@@ -103,7 +103,7 @@ const ChatSessionPage = () => {
             folder: conversation.title || 'General Consultation',
             date: date,
             duration: `${conversation.history.length * 2} min`,
-            doctor: `Dr. ${conversation.onbording_data?.name || 'AI Specialist'}`,
+            doctor: `Dr. MCB`,
             specialty: 'AI Psychiatrist',
             summary: generateSummaryFromConversation(conversation),
             chatCount: conversation.history.length,
