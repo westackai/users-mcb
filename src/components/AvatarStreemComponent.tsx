@@ -930,6 +930,8 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData ,
                 console.error('Failed to set avatar to retelling mode:', error);
                 setError('Failed to configure avatar for custom LLM mode');
             }
+
+            await initializeConversationId();
             setIsConnected(true);
             setIsConnecting(false);
             setConnectionStatus('connected');
@@ -985,6 +987,20 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData ,
                 }
             }
             throw error;
+        }
+    };
+    const initializeConversationId = async () => {
+        try {
+            if (!conversationIdRef.current && !conversationId) {
+                const response = await conversationSummaryApiRequest({});
+                if (response.data.conversation_id) {
+                    setConversationId(response.data.conversation_id);
+                    conversationIdRef.current = response.data.conversation_id;
+                    console.log('✅ Conversation ID initialized:', response.data.conversation_id);
+                }
+            }
+        } catch (error) {
+            console.error('Error initializing conversation ID:', error);
         }
     };
 
