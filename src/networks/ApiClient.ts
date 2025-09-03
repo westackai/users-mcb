@@ -47,7 +47,7 @@ axiosClient.interceptors.response.use(
             case 401:
                 return Promise.reject(error.response.data);
             case 403:
-                // unauthorizeAccess();
+                unauthorizeAccess();
                 return Promise.reject(error.response.data);
             case 404:
                 return Promise.reject(error.response.data);
