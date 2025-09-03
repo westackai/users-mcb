@@ -48,6 +48,7 @@ interface ChatMessage {
 
 interface AvatarCallComponentProps {
     sessionData: SessionData;
+    onRestartSession: () => void;
 }
 
 // Type definitions for Agora
@@ -86,7 +87,7 @@ interface MediaStreamSource {
     disconnect: () => void;
 }
 
-const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData }) => {
+const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData , onRestartSession }) => {
     // Deepgram state management
     const [isListening, setIsListening] = useState(false);
     const [currentTranscript, setCurrentTranscript] = useState('');
@@ -108,6 +109,7 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData }
     const [isAvatarSpeaking, setIsAvatarSpeaking] = useState(false);
     const [avatarResponse, setAvatarResponse] = useState('');
     const [conversationId, setConversationId] = useState<string | null>(null);
+    const conversationIdRef = useRef<string | null>(null);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [callDuration, setCallDuration] = useState(0);
 
@@ -728,22 +730,26 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData }
             let payload = {};
             let response;
             // Step 2: Process the question with your LLM service
-            if (!conversationId || conversationId === '') {
+            const currentConversationId = conversationIdRef.current || conversationId;
+            
+            if (!currentConversationId || currentConversationId === '') {
                 payload = {
                     user_message: question,
                     knowledgeBase_id: "12c0b2b7-4673-468a-b0ce-26b374ab08b7"
                 }
                 response = await sendMessageToAvatarApiRequest(payload);
-                setConversationId(response.data?.data?.conversation_id);
+                const newConversationId = response.data.data.conversation_id;
+                setConversationId(newConversationId);
+                conversationIdRef.current = newConversationId;
             } else {
                 payload = {
                     user_message: question,
-                    conversation_id: conversationId,
+                    conversation_id: currentConversationId,
                     knowledgeBase_id: "12c0b2b7-4673-468a-b0ce-26b374ab08b7"
                 }
                 response = await sendMessageToAvatarApiRequest(payload);
             }
-        
+            console.log('LLM Response:', response);
 
 
 
@@ -823,6 +829,7 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData }
             if (sessionData?.session_id) {
                 try {
                     await endSessionApiRequest({session_id : sessionData.session_id});
+                    console.log('Conversation ID:-=-=-=-', conversationId);
                     await conversationSummaryApiRequest({conversation_id : conversationId});
                 } catch (error) {
                     console.error('Error closing session:', error);

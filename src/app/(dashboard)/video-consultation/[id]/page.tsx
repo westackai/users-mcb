@@ -46,8 +46,8 @@ function TalkPageContent({ avatarData, avatarId }: { avatarData: any, avatarId: 
             setError(null);
             
             const payload = {
-                avatar_id: 'dvp_Alinna_emotionsit_20250116',
-                duration: 17,
+                avatar_id: 'dvp_Melisha_cloth3_pd',
+                duration: 30,
                 language: "en", 
             }
 
@@ -100,6 +100,17 @@ function TalkPageContent({ avatarData, avatarId }: { avatarData: any, avatarId: 
         }
     }
 
+    // Function to restart session - will be called from AvatarCallComponent
+    const restartSession = async () => {
+        console.log('Restarting session...');
+        sessionRunSingle.current = false;
+        setSessionData(null);
+        setSessionId(null);
+        setError(null);
+        await createSession();
+        console.log('Session restart completed');
+    }
+
     useEffect(() => {
         if (!sessionRunSingle.current) {
             createSession();
@@ -150,7 +161,10 @@ function TalkPageContent({ avatarData, avatarId }: { avatarData: any, avatarId: 
         <div>
             {
                 sessionData && (
-                    <AvatarCallComponent sessionData={sessionData} />
+                    <AvatarCallComponent 
+                        sessionData={sessionData} 
+                        onRestartSession={restartSession}
+                    />
                 )
             }
         </div>

@@ -14,4 +14,6 @@ export const ENDPOINTS = {
     AVATAR_END_SESSION:"avatar/session/close",
     AVATAR_SESSION_CREATE:"avatar/session/create",
     CONVERSATION_SUMMARY:"conversation/summary",
+    GET_CONVERSATIONS:"conversation/",
+    GET_CONVERSATION_BY_ID:"conversation/id/",
 }

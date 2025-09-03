@@ -1,6 +1,6 @@
 'use client'
 export const runtime = 'edge';
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { 
     Folder, 
     MessageSquare, 
@@ -21,36 +21,54 @@ import {
     Trash2
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { getConversationsApiRequest } from '@/networks/api';
 
-// Mock data - replace with actual API calls
-const chatSessions = [
-    {
-        id: 1,
-        folder: 'Anxiety & Depression Treatment',
-        date: '2024-01-15',
-        duration: '45 min',
-        doctor: 'Dr. Marie Claire Bourque',
-        specialty: 'Psychiatrist',
-        summary: 'Discussed anxiety symptoms, depression episodes, and stress management techniques. Reviewed medication effectiveness and coping strategies for daily challenges.',
-        chatCount: 23,
-        lastMessage: 'Thank you for the consultation, doctor. I feel much better now.',
-        status: 'completed',
-        tags: ['anxiety', 'depression', 'stress management', 'medication']
-    },
-    {
-        id: 2,
-        folder: 'ADHD & Focus Issues',
-        date: '2024-01-03',
-        duration: '40 min',
-        doctor: 'Dr. Marie Claire Bourque',
-        specialty: 'Psychiatrist',
-        summary: 'Evaluated ADHD symptoms and medication effectiveness. Discussed organizational strategies, time management techniques, and workplace accommodations.',
-        chatCount: 20,
-        lastMessage: 'The organizational apps you recommended are really helping.',
-        status: 'completed',
-        tags: ['ADHD', 'focus', 'organization', 'time management']
+interface Conversation {
+    uuid: string
+    title: string
+    prompt: string
+    opening: string
+    history: Array<{
+        content: string
+        role: string
+    }>
+    onbording_data: {
+        name: string
+        age: number
+        gender: string
+        mood_on_most_days: string
+        memory_issues: string
+        difficulty_organizing: string
+        sleep_quality: string
+        substance_use: string
+        other_medical_conditions: string
+        history_of_medical: string[]
+        side_effects_of_medicines: string
+        lose_essential_items: string
+        date_of_birth: string
     }
-]
+    summary?: string
+    knowledgeBase_id: string
+    user_uuid: string
+    chunks: any[]
+}
+
+interface ChatSession {
+    id: string
+    folder: string
+    date: string
+    duration: string
+    doctor: string
+    specialty: string
+    summary: string
+    chatCount: number
+    lastMessage: string
+    status: string
+    tags: string[]
+    uuid: string
+    title: string
+    onbording_data: any
+}
 
 const ChatHistoryPage = () => {
     const router = useRouter()
@@ -58,6 +76,8 @@ const ChatHistoryPage = () => {
     const [searchQuery, setSearchQuery] = useState('')
     const [filterStatus, setFilterStatus] = useState('all')
     const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
+    const [conversations, setConversations] = useState<Conversation[]>([])
+    const [loading, setLoading] = useState(true)
 
     const toggleFolder = (folderName: string) => {
         const newExpanded = new Set(expandedFolders)
@@ -68,6 +88,61 @@ const ChatHistoryPage = () => {
         }
         setExpandedFolders(newExpanded)
     }
+
+    const transformConversationsToSessions = (conversations: Conversation[]): ChatSession[] => {
+        return conversations.map((conv, index) => {
+            const lastMessage = conv.history.length > 0 ? conv.history[conv.history.length - 1].content : 'No messages'
+            const firstMessage = conv.history.length > 0 ? conv.history[0].content : ''
+            
+            // Extract tags from conversation content
+            const tags = extractTagsFromConversation(conv)
+            
+            // Generate date (you might want to add actual date field to your API)
+            const date = new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
+            
+            return {
+                id: conv.uuid,
+                folder: conv.title || 'General Consultation',
+                date: date,
+                duration: `${conv.history.length * 2} min`, // Estimate based on message count
+                doctor: `Dr. ${conv.onbording_data?.name || 'AI Specialist'}`,
+                specialty: 'AI Psychiatrist',
+                summary: conv.summary || firstMessage.substring(0, 100) + '...',
+                chatCount: conv.history.length,
+                lastMessage: lastMessage,
+                status: 'completed',
+                tags: tags,
+                uuid: conv.uuid,
+                title: conv.title,
+                onbording_data: conv.onbording_data
+            }
+        })
+    }
+
+    const extractTagsFromConversation = (conversation: Conversation): string[] => {
+        const tags: string[] = []
+        const content = conversation.history.map(msg => msg.content).join(' ').toLowerCase()
+        
+        // Extract tags based on content
+        if (content.includes('anxiety') || content.includes('stress')) tags.push('anxiety')
+        if (content.includes('depression') || content.includes('mood')) tags.push('depression')
+        if (content.includes('adhd') || content.includes('focus')) tags.push('ADHD')
+        if (content.includes('sleep') || content.includes('insomnia')) tags.push('sleep')
+        if (content.includes('trauma') || content.includes('ptsd')) tags.push('trauma')
+        if (content.includes('relationship') || content.includes('family')) tags.push('relationships')
+        if (content.includes('addiction') || content.includes('substance')) tags.push('addiction')
+        
+        // Add patient info tags
+        if (conversation.onbording_data) {
+            if (conversation.onbording_data.mood_on_most_days?.includes('unstable')) tags.push('mood swings')
+            if (conversation.onbording_data.memory_issues?.includes('rarely')) tags.push('memory')
+            if (conversation.onbording_data.difficulty_organizing?.includes('struggle')) tags.push('organization')
+        }
+        
+        return tags.slice(0, 4) // Limit to 4 tags
+    }
+
+    const chatSessions = transformConversationsToSessions(conversations)
 
     const filteredSessions = chatSessions.filter(session => {
         const matchesSearch = session.folder.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -84,6 +159,30 @@ const ChatHistoryPage = () => {
         acc[session.folder].push(session)
         return acc
     }, {} as Record<string, typeof chatSessions>)
+
+    const getAllConversations = async () => {
+        try {
+            setLoading(true)
+            const response = await getConversationsApiRequest()
+            console.log('Conversations response:', response?.data?.data?.Conversation)
+            
+            if (response?.data?.data?.Conversation && Array.isArray(response?.data?.data?.Conversation)) {
+                setConversations(response.data.data.Conversation)
+            } else {
+                console.error('Invalid response format:', response)
+                setConversations([])
+            }
+        } catch (error) {
+            console.error('Error fetching conversations:', error)
+            setConversations([])
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    useEffect(() => {
+        getAllConversations()
+    }, [])
 
     return (
         <div className="">
@@ -133,8 +232,31 @@ const ChatHistoryPage = () => {
                 </div>
 
                 {/* Chat Sessions */}
-                <div className="space-y-6">
-                    {Object.entries(groupedSessions).map(([folderName, sessions]) => (
+                {loading ? (
+                    <div className="space-y-6">
+                        {[1, 2, 3].map((index) => (
+                            <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden animate-pulse">
+                                <div className="p-6">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center space-x-3">
+                                            <div className="w-6 h-6 bg-gray-200 rounded"></div>
+                                            <div>
+                                                <div className="h-5 bg-gray-200 rounded w-48 mb-2"></div>
+                                                <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center space-x-4">
+                                            <div className="h-4 bg-gray-200 rounded w-20"></div>
+                                            <div className="w-5 h-5 bg-gray-200 rounded"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="space-y-6">
+                        {Object.entries(groupedSessions).map(([folderName, sessions]) => (
                         <div key={folderName} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                             {/* Folder Header */}
                             <div 
@@ -223,7 +345,7 @@ const ChatHistoryPage = () => {
 
                                                 {/* Action Buttons */}
                                                 <div className="flex flex-col space-y-2 ml-4">
-                                                    <button onClick={() => router.push(`/chat-history/${session.id}`)} className="p-2 cursor-pointer text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200" title="View Chat">
+                                                    <button onClick={() => router.push(`/chat-history/${session.uuid}`)} className="p-2 cursor-pointer text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200" title="View Chat">
                                                         <Eye className="h-4 w-4" />
                                                     </button>
                                                     {/* <button className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors duration-200" title="Download Transcript">
@@ -238,17 +360,17 @@ const ChatHistoryPage = () => {
                         </div>
                     ))}
                 </div>
-
-                </div>
+                )}
 
                 {/* Empty State */}
-                {Object.keys(groupedSessions).length === 0 && (
+                {!loading && Object.keys(groupedSessions).length === 0 && (
                     <div className="text-center py-12">
                         <MessageSquare className="h-16 w-16 text-gray-300 mx-auto mb-4" />
                         <h3 className="text-lg font-medium text-gray-900 mb-2">No chat sessions found</h3>
                         <p className="text-gray-600">Try adjusting your search or filters to find your conversations.</p>
                     </div>
                 )}
+                </div>
             </div>
         </div>
     )

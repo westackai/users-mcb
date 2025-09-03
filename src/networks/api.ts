@@ -82,3 +82,16 @@ export const conversationSummaryApiRequest = async (payload :any) => {
     const response = await postRequest(ENDPOINTS.CONVERSATION_SUMMARY, payload);
     return response;
 }
+
+export const getConversationsApiRequest = async () => {
+    const response = await getRequest(ENDPOINTS.GET_CONVERSATIONS);
+    return response;
+}
+
+export const getConversationByIdApiRequest = async (conversationId :string) => {
+    const response = await getRequest(ENDPOINTS.GET_CONVERSATION_BY_ID + conversationId);
+    return response;
+}
+
+
+  
