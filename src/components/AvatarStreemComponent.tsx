@@ -735,7 +735,7 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData ,
             if (!currentConversationId || currentConversationId === '') {
                 payload = {
                     user_message: question,
-                    knowledgeBase_id: "12c0b2b7-4673-468a-b0ce-26b374ab08b7"
+                    knowledgeBase_id: "23e620d9-ade8-4978-a91e-02856c461607"
                 }
                 response = await sendMessageToAvatarApiRequest(payload);
                 const newConversationId = response.data.data.conversation_id;
@@ -745,7 +745,7 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData ,
                 payload = {
                     user_message: question,
                     conversation_id: currentConversationId,
-                    knowledgeBase_id: "12c0b2b7-4673-468a-b0ce-26b374ab08b7"
+                    knowledgeBase_id: "23e620d9-ade8-4978-a91e-02856c461607"
                 }
                 response = await sendMessageToAvatarApiRequest(payload);
             }
