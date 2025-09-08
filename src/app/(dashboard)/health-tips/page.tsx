@@ -2,6 +2,7 @@
 export const runtime = 'edge';
 
 import React, { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { 
     Search, 
     Heart, 
@@ -32,9 +33,9 @@ interface HealthTip {
 }
 
 const HealthTipsPage = () => {
+    const router = useRouter()
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedCategory, setSelectedCategory] = useState('all')
-    const [selectedTip, setSelectedTip] = useState<HealthTip | null>(null)
 
     const categories = [
         { id: 'all', name: 'All Topics', icon: BookOpen, color: 'bg-blue-500' },
@@ -689,7 +690,7 @@ Remember: Small, sustainable changes are more effective than drastic diets.`,
     })
 
     const handleTipSelect = (tip: HealthTip) => {
-        setSelectedTip(tip)
+        router.push(`/health-tips/${tip.id}`)
     }
 
     return (
@@ -810,64 +811,6 @@ Remember: Small, sustainable changes are more effective than drastic diets.`,
                 )}
             </div>
 
-            {/* Tip Details Modal */}
-            {selectedTip && (
-                <div className="fixed inset-0 bg-gray-500/50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="p-8">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-3xl font-bold text-slate-900">{selectedTip.title}</h2>
-                                <button
-                                    onClick={() => setSelectedTip(null)}
-                                    className="text-slate-400 hover:text-slate-600"
-                                >
-                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                    </svg>
-                                </button>
-                            </div>
-
-                            {/* Tip Meta */}
-                            <div className="flex items-center space-x-6 mb-6 text-sm text-slate-600">
-                                <span className="flex items-center">
-                                    <Clock className="h-4 w-4 mr-2" />
-                                    {selectedTip.readTime}
-                                </span>
-                                <span className={`px-2 py-1 rounded-md font-medium ${
-                                    selectedTip.difficulty === 'Beginner' ? 'bg-green-100 text-green-700' :
-                                    selectedTip.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-700' :
-                                    'bg-red-100 text-red-700'
-                                }`}>
-                                    {selectedTip.difficulty}
-                                </span>
-                                <span>Updated {selectedTip.lastUpdated}</span>
-                            </div>
-
-                            {/* Content */}
-                            <div className="prose prose-slate max-w-none">
-                                <div className="whitespace-pre-line text-slate-700 leading-relaxed">
-                                    {selectedTip.content}
-                                </div>
-                            </div>
-
-                            {/* Tags */}
-                            <div className="mt-8 pt-6 border-t border-slate-200">
-                                <h4 className="font-medium text-slate-900 mb-3">Related Topics:</h4>
-                                <div className="flex flex-wrap gap-2">
-                                    {selectedTip.tags.map((tag, index) => (
-                                        <span
-                                            key={index}
-                                            className="px-3 py-1 bg-slate-100 text-slate-700 text-sm rounded-full"
-                                        >
-                                            {tag}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     )
 }

@@ -285,7 +285,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             // Fallback to regular API if streaming fails
             try {
                 const response = await sendMessageToAvatarApiRequest(payload)
-                console.log('Fallback response from chat', response?.data)
 
                 if (response?.data?.data?.response) {
                     return { conversationId: '', fullResponse: response.data.data.response }
