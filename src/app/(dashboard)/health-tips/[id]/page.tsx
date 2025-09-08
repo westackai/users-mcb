@@ -657,9 +657,7 @@ Remember: Small, sustainable changes are more effective than drastic diets.`,
             {/* Main Content */}
             <div className="max-w-7xl mx-auto px-6 py-8">
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-5">
-
                     {/* Main Content */}
-
                     <div className="lg:col-span-3 space-y-5">
                         {/* Related Topics */}
                         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
@@ -667,7 +665,7 @@ Remember: Small, sustainable changes are more effective than drastic diets.`,
                                 <Tag className="h-5 w-5 mr-2 text-blue-500" />
                                 Related Topics
                             </h3>
-                            <div className=" grid grid-cols-3 gap-2">
+                            <div className="grid grid-cols-3 gap-2">
                                 {selectedTip.tags.map((tag, index) => (
                                     <div
                                         key={index}
@@ -701,59 +699,59 @@ Remember: Small, sustainable changes are more effective than drastic diets.`,
                         </div>
                     </div>
 
-                    {/* Sidebar */}
-                    <div className="space-y-6">
-                        {/* Key Points */}
-                        {selectedTip.keyPoints && (
-                            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-                                <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
-                                    <Lightbulb className="h-5 w-5 mr-2 text-yellow-500" />
-                                    Key Points
-                                </h3>
-                                <div className="space-y-3">
-                                    {selectedTip.keyPoints.map((point, index) => (
-                                        <div
-                                            key={index}
-                                            className="px-3 py-2 bg-yellow-50 text-slate-700 rounded-lg border border-yellow-100"
-                                        >
-                                            <span className="text-sm font-medium">{point}</span>
-                                        </div>
-                                    ))}
+                    {/* Sticky Sidebar */}
+                    <div className="lg:sticky lg:top-8 lg:h-fit">
+                        <div className="space-y-6">
+                            {/* Key Points */}
+                            {selectedTip.keyPoints && (
+                                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                                    <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                                        <Lightbulb className="h-5 w-5 mr-2 text-yellow-500" />
+                                        Key Points
+                                    </h3>
+                                    <div className="space-y-3">
+                                        {selectedTip.keyPoints.map((point, index) => (
+                                            <div
+                                                key={index}
+                                                className="px-3 py-2 bg-yellow-50 text-slate-700 rounded-lg border border-yellow-100"
+                                            >
+                                                <span className="text-sm font-medium">{point}</span>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {/* Warnings */}
-                        {selectedTip.warnings && (
-                            <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
-                                <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
-                                    <AlertCircle className="h-5 w-5 mr-2 text-red-500" />
-                                    Important Warnings
-                                </h3>
-                                <div className="space-y-3">
-                                    {selectedTip.warnings.map((warning, index) => (
-                                        <div
-                                            key={index}
-                                            className="px-3 py-2 bg-red-50 text-slate-700 rounded-lg border border-red-100"
-                                        >
-                                            <span className="text-sm font-medium">{warning}</span>
-                                        </div>
-                                    ))}
+                            {/* Warnings */}
+                            {selectedTip.warnings && (
+                                <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
+                                    <h3 className="text-lg font-semibold text-slate-900 mb-4 flex items-center">
+                                        <AlertCircle className="h-5 w-5 mr-2 text-red-500" />
+                                        Important Warnings
+                                    </h3>
+                                    <div className="space-y-3">
+                                        {selectedTip.warnings.map((warning, index) => (
+                                            <div
+                                                key={index}
+                                                className="px-3 py-2 bg-red-50 text-slate-700 rounded-lg border border-red-100"
+                                            >
+                                                <span className="text-sm font-medium">{warning}</span>
+                                            </div>
+                                        ))}
+                                    </div>
                                 </div>
+                            )}
+
+                            {/* Quick Actions */}
+                            <div className="bg-blue-50 rounded-xl border border-blue-200 p-6">
+                                <h3 className="text-lg font-semibold text-slate-900 mb-3">Need Help?</h3>
+                                <p className="text-slate-600 mb-4 text-sm">If you have questions about this topic, our medical team is here to help.</p>
+                                <Link href="/video-consultation" className="w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                                    <MessageCircle className="h-4 w-4 inline mr-2" />
+                                    Consult with Doctor
+                                </Link>
                             </div>
-                        )}
-
-
-                        {/* Quick Actions */}
-                        <div className="bg-blue-50 rounded-xl border border-blue-200 p-6">
-                            <h3 className="text-lg font-semibold text-slate-900 mb-3">Need Help?</h3>
-                            <p className="text-slate-600 mb-4 text-sm">If you have questions about this topic, our medical team is here to help.</p>
-                            <Link href="/video-consultation" className="w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
-                                <MessageCircle className="h-4 w-4 inline mr-2" />
-                                Consult with Doctor
-                            </Link>
                         </div>
-
                     </div>
                 </div>
             </div>
