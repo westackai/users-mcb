@@ -35,6 +35,8 @@ import {
     ExternalLink
 } from 'lucide-react'
 import Link from 'next/link';
+import Image from 'next/image';
+import { doctorImage2 } from '@/assets';
 
 interface HealthTip {
     id: string
@@ -96,9 +98,9 @@ Early diagnosis and intervention can significantly improve outcomes and quality 
             tags: ['ADHD', 'Mental Health', 'Children', 'Adults', 'Behavior'],
             lastUpdated: '2024-01-15',
             author: {
-                name: 'Dr. Sarah Johnson',
-                title: 'Child Psychiatrist',
-                experience: '15+ Years',
+                name: 'Dr. MCB',
+                title: 'Psychiatrist',
+                experience: '20+ Years',
                 rating: 4.9,
                 patients: 2500
             },
@@ -156,9 +158,9 @@ Remember: Depression is treatable, and seeking help is a sign of strength.`,
             tags: ['Depression', 'Mental Health', 'Mood Disorders', 'Treatment', 'Symptoms'],
             lastUpdated: '2024-01-20',
             author: {
-                name: 'Dr. Michael Chen',
-                title: 'Clinical Psychologist',
-                experience: '12+ Years',
+                name: 'Dr. MCB',
+                title: 'Psychologist',
+                experience: '20+ Years',
                 rating: 4.8,
                 patients: 1800
             },
@@ -223,9 +225,9 @@ Early intervention can prevent anxiety from becoming debilitating.`,
             tags: ['Anxiety', 'Mental Health', 'Stress', 'Coping', 'Treatment'],
             lastUpdated: '2024-01-18',
             author: {
-                name: 'Dr. Emily Rodriguez',
+                name: 'Dr. MCB',
                 title: 'Anxiety Specialist',
-                experience: '10+ Years',
+                experience: '20+ Years',
                 rating: 4.9,
                 patients: 1200
             },
@@ -282,10 +284,10 @@ Remember: Small changes can make a big difference in heart health!`,
             tags: ['Heart Health', 'Prevention', 'Exercise', 'Diet', 'Cardiovascular'],
             lastUpdated: '2024-01-10',
             author: {
-                name: 'Dr. James Wilson',
+                name: 'Dr. MCB',
                 title: 'Cardiologist',
                 experience: '20+ Years',
-                rating: 4.9,
+                rating: 4.8,
                 patients: 3500
             },
             keyPoints: [
@@ -302,7 +304,7 @@ Remember: Small changes can make a big difference in heart health!`,
         },
         {
             id: '12',
-            title: 'Child Development Milestones',
+            title: 'Development Milestones',
             category: 'pediatrics',
             description: 'Track your child\'s development with age-appropriate milestones and when to seek help.',
             content: `Understanding child development milestones helps parents track their child's progress and identify potential concerns early.
@@ -335,9 +337,9 @@ Early intervention can address many developmental concerns effectively.`,
             tags: ['Child Development', 'Milestones', 'Infants', 'Toddlers', 'Preschool'],
             lastUpdated: '2024-01-12',
             author: {
-                name: 'Dr. Lisa Thompson',
+                name: 'Dr. MCB',
                 title: 'Pediatrician',
-                experience: '18+ Years',
+                experience: '20+ Years',
                 rating: 4.8,
                 patients: 2800
             },
@@ -399,9 +401,9 @@ Consult healthcare provider if sleep problems persist.`,
             tags: ['Sleep', 'Mental Health', 'Wellness', 'Habits', 'Health'],
             lastUpdated: '2024-01-08',
             author: {
-                name: 'Dr. Robert Kim',
+                name: 'Dr. MCB',
                 title: 'Sleep Medicine Specialist',
-                experience: '14+ Years',
+                experience: '20+ Years',
                 rating: 4.9,
                 patients: 2000
             },
@@ -459,9 +461,9 @@ Remember: Small, sustainable changes are more effective than drastic diets.`,
             tags: ['Nutrition', 'Health', 'Diet', 'Wellness', 'Food'],
             lastUpdated: '2024-01-05',
             author: {
-                name: 'Dr. Maria Garcia',
+                name: 'Dr. MCB',
                 title: 'Nutritionist',
-                experience: '16+ Years',
+                experience: '12+ Years',
                 rating: 4.8,
                 patients: 2200
             },
@@ -577,14 +579,14 @@ Remember: Small, sustainable changes are more effective than drastic diets.`,
                         <div className="lg:col-span-2">
                             {/* Category Badge */}
                             <div className="flex items-center gap-2 mb-6">
-                               <div className='flex items-center'>
-                               <button
-                                    onClick={() => router.back()}
-                                    className="flex items-center text-slate-600 hover:text-slate-900 px-2 transition-colors py-2 rounded-lg hover:bg-slate-100 !cursor-pointer"
-                                >
-                                    <ArrowLeft className="h-5 w-5" />
-                                </button>
-                               </div>
+                                <div className='flex items-center'>
+                                    <button
+                                        onClick={() => router.back()}
+                                        className="flex items-center text-slate-600 hover:text-slate-900 px-2 transition-colors py-2 rounded-lg hover:bg-slate-100 !cursor-pointer"
+                                    >
+                                        <ArrowLeft className="h-5 w-5" />
+                                    </button>
+                                </div>
                                 <div className={`p-2 rounded-lg ${categoryColor} mr-3`}>
                                     <CategoryIcon className="h-5 w-5 text-white" />
                                 </div>
@@ -614,8 +616,8 @@ Remember: Small, sustainable changes are more effective than drastic diets.`,
                                     <span className="text-sm">Updated {selectedTip.lastUpdated}</span>
                                 </div>
                                 <span className={`px-3 py-1 text-sm font-medium rounded-md ${selectedTip.difficulty === 'Beginner' ? 'bg-green-100 text-green-700' :
-                                        selectedTip.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-700' :
-                                            'bg-red-100 text-red-700'
+                                    selectedTip.difficulty === 'Intermediate' ? 'bg-yellow-100 text-yellow-700' :
+                                        'bg-red-100 text-red-700'
                                     }`}>
                                     {selectedTip.difficulty}
                                 </span>
@@ -625,8 +627,9 @@ Remember: Small, sustainable changes are more effective than drastic diets.`,
                         {/* Doctor Profile */}
                         <div className="bg-white rounded-xl border border-slate-200 shadow-sm p-6">
                             <div className="text-center">
-                                <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                    <User className="h-10 w-10 text-blue-600" />
+                                <div className="w-20 h-20 bg-blue-100 relative rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <Image fill className='object-cover' src={doctorImage2} alt="" />
+                                    {/* <User className="h-10 w-10 text-blue-600" /> */}
                                 </div>
 
                                 <h3 className="text-lg font-semibold text-slate-900 mb-1">{selectedTip.author?.name}</h3>
@@ -644,10 +647,10 @@ Remember: Small, sustainable changes are more effective than drastic diets.`,
                                     </div>
                                 </div>
 
-                                <button className="w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                                {/* <button className="w-full bg-blue-600 text-white font-medium py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
                                     <MessageCircle className="h-4 w-4 inline mr-2" />
                                     Consult Doctor
-                                </button>
+                                </button> */}
                             </div>
                         </div>
                     </div>

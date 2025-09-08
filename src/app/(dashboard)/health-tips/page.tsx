@@ -715,7 +715,7 @@ Remember: Small, sustainable changes are more effective than drastic diets.`,
                                 placeholder="Search health tips..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full pl-10 placeholder:text-gray-500 text-gray-700 pr-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             />
                         </div>
                         
@@ -725,7 +725,7 @@ Remember: Small, sustainable changes are more effective than drastic diets.`,
                             <select
                                 value={selectedCategory}
                                 onChange={(e) => setSelectedCategory(e.target.value)}
-                                className="px-4 py-3 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="px-4 py-3 border placeholder:text-gray-500 text-gray-700 border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                             >
                                 {categories.map((category) => (
                                     <option key={category.id} value={category.id}>

@@ -143,7 +143,7 @@ const ChatSessionPage = () => {
     }
 
     const generateSummaryFromConversation = (conversation: Conversation): string => {
-        if (conversation.summary) {
+        if (conversation.summary && conversation.summary.trim()) {
             return conversation.summary
         }
         
@@ -152,13 +152,46 @@ const ChatSessionPage = () => {
         const assistantMessages = conversation.history.filter(msg => msg.role === 'assistant')
         
         if (userMessages.length === 0) {
-            return 'Conversation initiated with AI specialist.'
+            return 'This conversation was initiated with our AI specialist. The session focused on providing mental health support and guidance.'
         }
         
         const firstUserMessage = userMessages[0].content
         const lastAssistantMessage = assistantMessages.length > 0 ? assistantMessages[assistantMessages.length - 1].content : ''
         
-        return `Patient initiated conversation with "${firstUserMessage}". The AI specialist provided guidance and support throughout the session. ${lastAssistantMessage ? `Final response: "${lastAssistantMessage}"` : ''}`
+        // Create a more comprehensive summary
+        const keyTopics = extractKeyTopics(conversation.history)
+        const summaryParts = [
+            `Patient initiated conversation discussing: "${firstUserMessage.substring(0, 100)}${firstUserMessage.length > 100 ? '...' : ''}"`,
+            keyTopics.length > 0 ? `Key topics covered: ${keyTopics.join(', ')}` : '',
+            assistantMessages.length > 0 ? 'The AI specialist provided comprehensive guidance and support throughout the session.' : '',
+            lastAssistantMessage ? `Session concluded with recommendations and next steps.` : ''
+        ].filter(Boolean)
+        
+        return summaryParts.join(' ')
+    }
+
+    const extractKeyTopics = (history: Array<{content: string, role: string}>): string[] => {
+        const topics: string[] = []
+        const content = history.map(msg => msg.content).join(' ').toLowerCase()
+        
+        // Define topic keywords
+        const topicKeywords = {
+            'anxiety': ['anxiety', 'worried', 'nervous', 'panic', 'stress'],
+            'depression': ['depression', 'sad', 'down', 'hopeless', 'mood'],
+            'sleep': ['sleep', 'insomnia', 'tired', 'fatigue', 'rest'],
+            'relationships': ['relationship', 'family', 'friend', 'social', 'lonely'],
+            'work': ['work', 'job', 'career', 'professional', 'office'],
+            'health': ['health', 'medical', 'doctor', 'medication', 'treatment'],
+            'coping': ['coping', 'strategies', 'techniques', 'manage', 'handle']
+        }
+        
+        Object.entries(topicKeywords).forEach(([topic, keywords]) => {
+            if (keywords.some(keyword => content.includes(keyword))) {
+                topics.push(topic)
+            }
+        })
+        
+        return topics.slice(0, 3) // Limit to 3 key topics
     }
 
     const getSessionById = async () => {
@@ -232,7 +265,7 @@ const ChatSessionPage = () => {
                     <div className="flex items-center gap-3">
                         <button 
                             onClick={() => router.back()}
-                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                            className="p-2 hover:bg-gray-100 cursor-pointer rounded-lg transition-colors duration-200"
                         >
                             <ChevronLeft className="h-5 w-5 text-gray-600" />
                         </button>

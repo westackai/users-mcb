@@ -8,7 +8,7 @@ import { toast } from 'react-toastify'
 import { setToken } from '../../../../_utils/cookies'
 import { useRouter } from 'next/navigation'
 import Image from 'next/image';
-import { loginPageImage } from '../../../assets/imdex';
+import { loginPageImage } from '../../../assets';
 
 
 const LoginPage = () => {
