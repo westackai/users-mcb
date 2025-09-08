@@ -192,7 +192,7 @@ const ProfilePage = () => {
                             {!isEditing ? (
                                 <button
                                     onClick={handleEdit}
-                                    className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                                    className="flex items-center cursor-pointer space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
                                 >
                                     <Edit2 className="h-4 w-4" />
                                     <span>Edit Profile</span>
@@ -201,7 +201,7 @@ const ProfilePage = () => {
                                 <>
                                     <button
                                         onClick={handleCancel}
-                                        className="flex items-center space-x-2 bg-slate-500 text-white px-4 py-2 rounded-lg hover:bg-slate-600 transition-colors"
+                                        className="flex cursor-pointer items-center space-x-2 bg-slate-500 text-white px-4 py-2 rounded-lg hover:bg-slate-600 transition-colors"
                                     >
                                         <X className="h-4 w-4" />
                                         <span>Cancel</span>
@@ -209,7 +209,7 @@ const ProfilePage = () => {
                                     <button
                                         onClick={handleSave}
                                         disabled={!hasChanges || isLoading}
-                                        className="flex items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="flex cursor-pointer items-center space-x-2 bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         {isLoading ? (
                                             <>
