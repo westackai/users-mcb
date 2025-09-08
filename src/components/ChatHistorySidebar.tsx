@@ -211,7 +211,7 @@ const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
                         {onToggleCollapse && (
                             <button
                                 onClick={onToggleCollapse}
-                                className="hidden lg:block p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                                className="hidden cursor-pointer lg:block p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
                                 title={isCollapsed ? "Expand" : "Collapse"}
                             >
                                 <ChevronRight className={`h-4 w-4 transition-transform duration-300 ${isCollapsed ? 'rotate-0' : 'rotate-180'
@@ -273,7 +273,7 @@ const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
                                     {/* Folder Header */}
                                     <button
                                         onClick={() => toggleFolder(folderName)}
-                                        className="w-full flex items-center justify-between p-2 text-left hover:bg-gray-50 rounded-lg transition-colors duration-200"
+                                        className="w-full flex cursor-pointer items-center justify-between p-2 text-left hover:bg-gray-50 rounded-lg transition-colors duration-200"
                                     >
                                         <div className="flex items-center space-x-2">
                                             <Folder className="h-4 w-4 text-gray-500" />
@@ -355,7 +355,7 @@ const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
 
                                                         <button
                                                             onClick={(e) => handleSessionMenu(session.id, e)}
-                                                            className="opacity-0 group-hover:opacity-100 p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-all duration-200"
+                                                            className="opacity-0 group-hover:opacity-100 p-1 cursor-pointer text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded transition-all duration-200"
                                                         >
                                                             <MoreVertical className="h-4 w-4" />
                                                         </button>
@@ -369,7 +369,7 @@ const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
                                                                     e.stopPropagation()
                                                                     handleRename(session)
                                                                 }}
-                                                                className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
+                                                                className="w-full px-3 py-2 cursor-pointer text-left text-sm text-gray-700 hover:bg-gray-50 flex items-center space-x-2"
                                                             >
                                                                 <Edit3 className="h-3 w-3" />
                                                                 <span>Rename</span>
@@ -380,7 +380,7 @@ const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
                                                                     onSessionDelete(session.id)
                                                                     setShowSessionMenu(null)
                                                                 }}
-                                                                className="w-full px-3 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
+                                                                className="w-full px-3 py-2 cursor-pointer text-left text-sm text-red-600 hover:bg-red-50 flex items-center space-x-2"
                                                             >
                                                                 <Trash2 className="h-3 w-3" />
                                                                 <span>Delete</span>

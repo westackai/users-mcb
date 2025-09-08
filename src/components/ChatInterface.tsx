@@ -359,7 +359,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 <div className="flex items-center space-x-2">
                     <button
                         onClick={handleNewChat}
-                        className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
+                        className="p-2 cursor-pointer text-gray-600 hover:bg-gray-100 rounded-lg transition-colors duration-200"
                         title="New Chat"
                     >
                         <Plus className="h-5 w-5" />
@@ -419,7 +419,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                                         <button
                                             key={knowledgeBase.id}
                                             onClick={() => setSelectedKnowledgeBase(knowledgeBase)}
-                                            className="p-4 text-left bg-white border border-gray-200 hover:border-blue-300 hover:bg-blue-50 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+                                            className="p-4 cursor-pointer text-left bg-white border border-gray-200 hover:border-blue-300 hover:bg-blue-50 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
                                         >
                                             <div className="flex items-center space-x-3">
                                                 <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
