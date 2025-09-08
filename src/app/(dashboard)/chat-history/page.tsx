@@ -51,7 +51,7 @@ interface Conversation {
     knowledgeBase_id: string
     user_uuid: string
     chunks: any[]
-    created_at?: string // Optional field if API provides it
+    created_at: string // Optional field if API provides it
 }
 
 interface ChatSession {
@@ -101,10 +101,15 @@ const ChatHistoryPage = () => {
             // Extract tags from conversation content
             const tags = extractTagsFromConversation(conv)
             
-            // Generate creation date - since API doesn't provide created_at, we'll use a reverse chronological order
-            // Newest conversations first (index 0 = most recent)
-            const daysAgo = index * 2; // Spread conversations over time
-            const creationDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000)
+            // Use actual created_at from API if available, otherwise generate a date
+            let creationDate: Date
+            if (conv.created_at) {
+                creationDate = new Date(conv.created_at)
+            } else {
+                // Fallback: generate date based on index (newest first)
+                const daysAgo = index * 2
+                creationDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000)
+            }
             
             // Format date and time
             const formattedDate = creationDate.toLocaleDateString('en-US', {
@@ -134,7 +139,7 @@ const ChatHistoryPage = () => {
                 uuid: conv.uuid,
                 title: conv.title,
                 onbording_data: conv.onbording_data,
-                created_at: creationDate.toISOString(),
+                created_at: conv.created_at || creationDate.toISOString(),
                 formattedDate: formattedDate,
                 formattedTime: formattedTime
             }
@@ -171,14 +176,16 @@ const ChatHistoryPage = () => {
             console.log('Conversations response:', response?.data?.data?.Conversation)
             
             if (response?.data?.data?.Conversation && Array.isArray(response?.data?.data?.Conversation)) {
-                // Sort conversations by newest first (assuming the API returns them in chronological order)
-                // If API provides created_at, we can sort by that instead
+                // Sort conversations by newest first using created_at field
                 const sortedConversations = response.data.data.Conversation.sort((a: Conversation, b: Conversation) => {
-                    // If both have created_at, sort by that
+                    // If both have created_at, sort by that (newest first)
                     if (a.created_at && b.created_at) {
                         return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
                     }
-                    // Otherwise, assume the order from API is correct (newest first)
+                    // If only one has created_at, prioritize the one with created_at
+                    if (a.created_at && !b.created_at) return -1
+                    if (!a.created_at && b.created_at) return 1
+                    // If neither has created_at, maintain original order
                     return 0
                 })
                 setConversations(sortedConversations)

@@ -284,7 +284,8 @@ const VideoConsultationPage = () => {
                                             const avatarId = avatar.avatar_id || avatar.id
                                             router.push(`/video-consultation/${avatar.id}?avatar_id=${avatarId}`)
                                         }}
-                                        className="w-full cursor-pointer bg-white border-2 border-black text-black px-4 py-2 rounded-lg hover:bg-gray-100 transition-colors text-sm font-medium"
+                                        className=" group flex items-center text-sm text-black font-medium rounded-full w-full justify-center py-4 cursor-pointer transition-all duration-300 ease-in-out
+                                        transform hover:scale-105 hover:shadow-md bg-blue-50 text-blue-700 border-r-2 border-blue-600 shadow-sm"
                                     >
                                         Start Consultation
                                     </button>

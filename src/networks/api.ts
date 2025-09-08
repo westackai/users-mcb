@@ -1,4 +1,4 @@
-import { getRequest, postRequest, putRequest } from "./ApiRequest";
+import { getRequest, postRequest, putRequest, streamingPostRequest } from "./ApiRequest";
 import { ENDPOINTS } from "./EndPoints";
 
 
@@ -76,6 +76,10 @@ export const sendMessageToAvatarApiRequest = async (payload :any) => {
     return response;
 }
 
+export const sendStreamingMessageToAvatarApiRequest = async (payload: any, onChunk: (chunk: any) => void) => {
+    await streamingPostRequest(ENDPOINTS.AVATAR_MESSAGE, payload, onChunk);
+}
+
 
 // Conversation Summary API Requests
 export const conversationSummaryApiRequest = async (payload :any) => {
@@ -93,5 +97,8 @@ export const getConversationByIdApiRequest = async (conversationId :string) => {
     return response;
 }
 
-
-  
+// Knowledge Base API Requests
+export const getAllKnowledgeBasesApiRequest = async () => {
+    const response = await getRequest(ENDPOINTS.GET_ALL_KNOWLEDGE_BASES);
+    return response;
+}

@@ -67,6 +67,13 @@ const SideBar = () => {
             // description: 'Start a session with doctor'
         },
         {
+            name: 'AI Chat Bot',
+            href: '/chat-bot',
+            icon: MessageSquare,
+            // description: 'Chat with AI assistant'
+        },
+        
+        {
             name: 'Chat History',
             href: '/chat-history',
             icon: MessageSquare,
@@ -119,8 +126,13 @@ const SideBar = () => {
     }
 
     useEffect(() => {
-        console.log("pathname-----=", pathname)
-        if (pathname.startsWith('/video-consultation/') && pathname !== '/video-consultation') {
+        // Collapse sidebar on any /video-consultation/* except the base, or any /chat-bot* route (including /chat-bot, /chat-bot/, /chat-bot/:id)
+        if (
+            (pathname.startsWith('/video-consultation/') && pathname !== '/video-consultation') ||
+            pathname === '/chat-bot' ||
+            pathname === '/chat-bot/' ||
+            /^\/chat-bot\/[^/]+$/.test(pathname)
+        ) {
             setIsCollapsed(true)
         } else {
             setIsCollapsed(false)
@@ -166,14 +178,14 @@ const SideBar = () => {
                         <div className="flex items-center justify-between">
                             {!isCollapsed && (<div className={`flex items-center space-x-3 transition-all duration-300 ${isCollapsed ? 'w-0 overflow-hidden' : 'w-auto'}`}>
                                 <div className=" flex items-center justify-center transition-all duration-300 hover:scale-110 flex-shrink-0">
-                                    <div className='relative h-10 w-10'>
+                                    <Link href="/video-consultation" className='relative h-10 w-14'>
 
                                     <Image src="/logo.svg" fill alt="logo" />
-                                    </div>
+                                    </Link>
                                 </div>
-                                <span className={`text-lg font-bold text-gray-900 transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'}`}>
+                                {/* <span className={`text-lg font-bold text-gray-900 transition-all duration-300 ${isCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'}`}>
                                     Dr. MCB
-                                </span>
+                                </span> */}
                             </div>)}
                             <button
                                 onClick={() => setIsCollapsed(!isCollapsed)}

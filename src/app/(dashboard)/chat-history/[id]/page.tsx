@@ -72,6 +72,8 @@ interface ChatSession {
         timestamp: string
         avatar: string
     }>
+    formattedDate: string
+    formattedTime: string
 }
 
 const ChatSessionPage = () => {
@@ -110,7 +112,9 @@ const ChatSessionPage = () => {
             lastMessage: conversation.history.length > 0 ? conversation.history[conversation.history.length - 1].content : 'No messages',
             status: 'completed',
             tags: tags,
-            chat: chat
+            chat: chat,
+            formattedDate: new Date(date).toLocaleDateString(),
+            formattedTime: new Date(date).toLocaleTimeString()
         }
     }
 
@@ -247,15 +251,19 @@ const ChatSessionPage = () => {
                         <div className="flex items-center space-x-6 text-sm text-gray-600">
                             <div className="flex items-center">
                                 <Calendar className="h-4 w-4 mr-2" />
-                                {session.date}
+                                {session.formattedDate}
                             </div>
                             <div className="flex items-center">
                                 <Clock className="h-4 w-4 mr-2" />
-                                {session.duration}
+                                {session.formattedTime}
                             </div>
                             <div className="flex items-center">
                                 <MessageSquare className="h-4 w-4 mr-2" />
                                 {session.chatCount} messages
+                            </div>
+                            <div className="flex items-center">
+                                <Clock className="h-4 w-4 mr-2" />
+                                {session.duration}
                             </div>
                         </div>
                         <div className="flex flex-wrap gap-2">
@@ -302,7 +310,7 @@ const ChatSessionPage = () => {
                                     <p className="text-blue-100 text-sm">{session.specialty}</p>
                                 </div>
                             </div>
-                            <div className="flex items-center space-x-2">
+                            {/* <div className="flex items-center space-x-2">
                                 <button 
                                     onClick={() => setIsPlaying(!isPlaying)}
                                     className="p-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors duration-200"
@@ -315,7 +323,7 @@ const ChatSessionPage = () => {
                                 >
                                     {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
                                 </button>
-                            </div>
+                            </div> */}
                         </div>
                     </div>
 
