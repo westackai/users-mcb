@@ -23,7 +23,7 @@ import {
     AlertCircle,
     Square
 } from 'lucide-react';
-import { conversationSummaryApiRequest, endSessionApiRequest, sendMessageToAvatarApiRequest } from '@/networks/api';
+import { conversationSummaryApiRequest, endSessionApiRequest, sendMessageToAvatarApiRequest, sendStreamingMessageToAvatarApiRequest } from '@/networks/api';
 import { LiveTranscriptionEvents, createClient } from '@deepgram/sdk';
 import { toast } from 'react-toastify';
 import { useRouter } from 'next/navigation';
@@ -558,7 +558,7 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData ,
         client.on('user-left', onUserLeft);
     };
 
-    // Set Up Message Handling - ENHANCED with AKOOL Built-in Detection
+    // Set Up Message Handling - ENHANCED with AKOOL Built-in Detection and Streaming Support
     const setupMessageHandlers = (client: AgoraClient) => {
         let answer = '';
         client.on('stream-message', (uid: any, message: any) => {
@@ -573,6 +573,7 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData ,
                             answer += payload.text;
                             setAvatarResponse(answer);
                             setIsAvatarSpeaking(true);
+                            setIsTyping(false); // Stop typing indicator when avatar starts speaking
                         } else {
                             // Final chunk - use the complete answer
                             setChatHistory(prev => [...prev, {
@@ -584,9 +585,8 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData ,
                             answer = '';
                             setIsTyping(false);
                             setIsAvatarSpeaking(false);
+                            
                             // Resume listening after avatar finishes speaking
-                            setIsAvatarSpeaking(false);
-                            // Multiple restart attempts to ensure speech recognition resumes
                             if (!audioMuted && deepgramConnection.current) {
                                 setTimeout(() => {
                                     if (!isListening) startDeepgramListening();
@@ -715,7 +715,7 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData ,
         }
     };
 
-    // Custom LLM Processing with Enhanced Interrupt
+    // Custom LLM Processing with Enhanced Interrupt and Streaming
     const sendMessageToAvatarWithLLM = async (client: AgoraClient, question: string) => {
         try {
             if (!client || client.connectionState !== 'CONNECTED') {
@@ -731,62 +731,100 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData ,
             await new Promise(resolve => setTimeout(resolve, 100));
          
             let payload = {};
-            let response;
+            let conversationId = '';
+            let fullResponse = '';
+            let isStreamingComplete = false;
+            
             // Step 2: Process the question with your LLM service
             const currentConversationId = conversationIdRef.current || conversationId;
             
             if (!currentConversationId || currentConversationId === '') {
                 payload = {
                     user_message: question,
-                    knowledgeBase_id: "23e620d9-ade8-4978-a91e-02856c461607"
+                    knowledgeBase_id: "23e620d9-ade8-4978-a91e-02856c461607",
+                    conversation_type: "avatar"
                 }
-                response = await sendMessageToAvatarApiRequest(payload);
-                setEndSessionConversationId(response.data.data.conversation_id);
-                const newConversationId = response.data.data.conversation_id;
-                setConversationId(newConversationId);
-                conversationIdRef.current = newConversationId;
             } else {
                 payload = {
                     user_message: question,
                     conversation_id: currentConversationId,
-                    knowledgeBase_id: "23e620d9-ade8-4978-a91e-02856c461607"
+                    knowledgeBase_id: "23e620d9-ade8-4978-a91e-02856c461607",
+                    conversation_type: "avatar"
                 }
-                response = await sendMessageToAvatarApiRequest(payload);
-                setEndSessionConversationId(response.data.data.conversation_id);
             }
-            console.log('LLM Response:', response);
 
-
-
-            if (response && response.data) {
-
-                // Extract the response text (handle both 'response' and 'message' fields)
-                const responseText = response.data.response ||response?.data?.data?.response;
-
-                if (responseText) {
-                    // Step 3: Send one more interrupt before sending LLM response
-                    await interruptAvatar(client);
-                    await new Promise(resolve => setTimeout(resolve, 100));
-
-                    // Step 4: Send the LLM response to avatar
-                    const messageId = generateMessageId();
-                    await sendMessageToAvatar(client, responseText, messageId);
-
-                    // Add assistant response to chat
-                    setChatHistory(prev => [...prev, {
-                        type: 'assistant',
-                        content: responseText,
-                        timestamp: new Date()
-                    }]);
-                } else {
-                    throw new Error('No response text found in LLM response');
+            // Step 3: Use streaming API with intelligent chunk handling
+            let accumulatedText = '';
+            let lastSendTime = 0;
+            const SEND_INTERVAL = 500; // Send every 500ms for smoother speech
+            const MIN_CHUNK_SIZE = 20; // Minimum characters before sending
+            
+            await sendStreamingMessageToAvatarApiRequest(payload, (chunk) => {
+                console.log('Received chunk:', chunk);
+                
+                // Handle conversation_id from initial response
+                if (chunk.conversation_id) {
+                    conversationId = chunk.conversation_id;
+                    setEndSessionConversationId(conversationId);
+                    if (!conversationIdRef.current) {
+                        setConversationId(conversationId);
+                        conversationIdRef.current = conversationId;
+                    }
                 }
-            } else {
-                throw new Error('Failed to get response from LLM');
+                
+                // Handle text chunks
+                if (chunk.text !== undefined) {
+                    fullResponse += chunk.text;
+                    accumulatedText += chunk.text;
+                    
+                    const now = Date.now();
+                    const shouldSend = 
+                        // Send if enough time has passed and we have minimum content
+                        (now - lastSendTime >= SEND_INTERVAL && accumulatedText.trim().length >= MIN_CHUNK_SIZE) ||
+                        // Send immediately if we detect sentence boundaries (., !, ?)
+                        (accumulatedText.trim().match(/[.!?]\s*$/) && accumulatedText.trim().length > 0);
+                    
+                    if (shouldSend && accumulatedText.trim()) {
+                        sendMessageToAvatar(client, accumulatedText, generateMessageId());
+                        accumulatedText = '';
+                        lastSendTime = now;
+                    }
+                }
+                
+                // Handle completion
+                if (chunk.done) {
+                    isStreamingComplete = true;
+                    console.log('Streaming completed, full response:', fullResponse);
+                    
+                    // Send any remaining accumulated text
+                    if (accumulatedText.trim()) {
+                        sendMessageToAvatar(client, accumulatedText, generateMessageId());
+                    }
+                    
+                    // Add complete response to chat history
+                    if (fullResponse.trim()) {
+                        setChatHistory(prev => [...prev, {
+                            type: 'assistant',
+                            content: fullResponse,
+                            timestamp: new Date()
+                        }]);
+                    }
+                    
+                    setIsTyping(false);
+                    setIsAvatarSpeaking(false);
+                }
+            });
+
+            // Wait for streaming to complete
+            while (!isStreamingComplete) {
+                await new Promise(resolve => setTimeout(resolve, 100));
             }
+
         } catch (error) {
             console.error('Error in enhanced LLM message sending:', error);
             setError('Failed to process message with LLM');
+            setIsTyping(false);
+            setIsAvatarSpeaking(false);
             throw error;
         }
     };
@@ -867,7 +905,7 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData ,
             processor.current = null;
             microphone.current = null;
             speechTimeout.current = null;
-            router.push('/video-consultation');
+            // router.push('/video-consultation');
         } catch (error) {
             console.error('Error during cleanup:', error);
         }
@@ -945,21 +983,29 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData ,
             setIsConnected(true);
             setIsConnecting(false);
             setConnectionStatus('connected');
-            // Send greeting immediately after connection is established
-            const greetingMessage = "Hello, I'm Dr. Marie, nice to meet you, how can I help you today?";
-            // Add welcome message to chat history
-            setChatHistory([{
-                type: 'assistant',
-                content: greetingMessage,
-                timestamp: new Date()
-            }]);
-            // Send greeting IMMEDIATELY - no delay
+            
+            // Send initial "Hello" message to custom LLM
             try {
-                const messageId = generateMessageId();
-                await sendMessageToAvatar(client, greetingMessage, messageId);
-                console.log('✅ Direct greeting sent successfully', greetingMessage);
+                console.log('🚀 Sending initial Hello message to custom LLM...');
+                await sendMessageToAvatarWithLLM(client as AgoraClient, "Hello");
+                console.log('✅ Initial Hello message sent to custom LLM successfully');
             } catch (error) {
-                console.error('Failed to send immediate greeting:', error);
+                console.error('❌ Failed to send initial Hello message to custom LLM:', error);
+                // Fallback: Send greeting directly to avatar if LLM fails
+                const greetingMessage = "Hello, I'm Dr. Marie, nice to meet you, how can I help you today?";
+                try {
+                    const messageId = generateMessageId();
+                    await sendMessageToAvatar(client, greetingMessage, messageId);
+                    // Add welcome message to chat history
+                    setChatHistory([{
+                        type: 'assistant',
+                        content: greetingMessage,
+                        timestamp: new Date()
+                    }]);
+                    console.log('✅ Fallback greeting sent successfully', greetingMessage);
+                } catch (fallbackError) {
+                    console.error('❌ Failed to send fallback greeting:', fallbackError);
+                }
             }
             // Enable voice mode automatically after connection
             try {
@@ -1178,8 +1224,10 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData ,
     useEffect(() => {
         if (sessionData && agoraLoaded && !isConnected && !isConnecting) {
             connectToAvatar();
+          
         }
     }, [sessionData, agoraLoaded]);
+
 
     return (
         <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex">
