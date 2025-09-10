@@ -205,9 +205,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             } else {
                 // Create new session with unique ID
                 const sessionId = response.conversationId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                const sessionTitle = selectedKnowledgeBase?.title || 
+                    (inputMessage.trim().length > 0 ? inputMessage.trim().substring(0, 50) + (inputMessage.trim().length > 50 ? '...' : '') : 'New Chat')
+                
                 const newSession: ChatSession = {
                     id: sessionId,
-                    title: selectedKnowledgeBase?.title || inputMessage.trim().substring(0, 50) + (inputMessage.trim().length > 50 ? '...' : ''),
+                    title: sessionTitle,
                     messages: finalMessages,
                     createdAt: new Date(),
                     updatedAt: new Date()
@@ -277,6 +280,11 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                 }
             })
 
+            // Ensure we always have a conversationId
+            if (!conversationId) {
+                conversationId = `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+            }
+            
             return { conversationId, fullResponse }
         } catch (error) {
             console.error('Error calling streaming LLM API:', error)
@@ -285,10 +293,12 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             try {
                 const response = await sendMessageToAvatarApiRequest(payload)
 
+                const fallbackConversationId = `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+                
                 if (response?.data?.data?.response) {
-                    return { conversationId: '', fullResponse: response.data.data.response }
+                    return { conversationId: fallbackConversationId, fullResponse: response.data.data.response }
                 } else if (response?.data?.response) {
-                    return { conversationId: '', fullResponse: response.data.response }
+                    return { conversationId: fallbackConversationId, fullResponse: response.data.response }
                 }
             } catch (fallbackError) {
                 console.error('Fallback API also failed:', fallbackError)
@@ -307,7 +317,8 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
             ]
 
             const fallbackResponse = fallbackResponses[Math.floor(Math.random() * fallbackResponses.length)]
-            return { conversationId: '', fullResponse: fallbackResponse }
+            const finalFallbackConversationId = `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+            return { conversationId: finalFallbackConversationId, fullResponse: fallbackResponse }
         }
     }
 
