@@ -19,7 +19,7 @@ import {
     Bot,
     Sparkles
 } from 'lucide-react'
-import { avatarListApiRequest } from '@/networks/api'
+import { avatarListApiRequest, avatarOnboardingApiRequest } from '@/networks/api'
 import { useRouter } from 'next/navigation'
 
 interface AIAvatar {
@@ -137,6 +137,22 @@ const VideoConsultationPage = () => {
         } finally {
             setLoading(false)
         }
+    }
+
+    const handleRedirectPage = async (avatarId: string) => {
+
+        try{
+            const response = await avatarOnboardingApiRequest(avatarId)
+            if (response?.data?.success === false) {
+                console.log('Avatar onboarding response:', response?.data?.success)
+                router.push(`/video-consultation/onboarding?avatar_id=${avatarId}`)
+                // router.push(`/video-consultation/onboarding?avatar_id=${avatarId}`)
+            }
+        }
+         catch (error:any) {
+            console.error('Error redirecting page:', error)
+        }
+        // router.push(`/video-consultation/onboarding?avatar_id=${avatarId}`)
     }
 
     useEffect(() => {
@@ -281,10 +297,12 @@ const VideoConsultationPage = () => {
                                     <button 
                                         onClick={(e) => {
                                             e.stopPropagation()
+                                            // handleRedirectPage(avatar?.id || '')
+                                           
                                             const avatarId = avatar.avatar_id || avatar.id
                                             router.push(`/video-consultation/${avatar.id}?avatar_id=${avatarId}`)
                                         }}
-                                        className=" group flex items-center text-sm text-black font-medium rounded-full w-full justify-center py-4 cursor-pointer transition-all duration-300 ease-in-out
+                                        className=" group flex items-center text-sm  font-medium rounded-full w-full justify-center py-4 cursor-pointer transition-all duration-300 ease-in-out
                                         transform hover:scale-105 hover:shadow-md bg-blue-50 text-blue-700 border-r-2 border-blue-600 shadow-sm"
                                     >
                                         Start Consultation

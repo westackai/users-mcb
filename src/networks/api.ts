@@ -112,3 +112,11 @@ export const getAllHealthTipsApiRequest = () => {
     return getRequest(ENDPOINTS.HEALTH_TIP_DETAILS_BY_ID + Id);
   }
   
+  // Avatar Onboarding API Requests
+  export const avatarOnboardingApiRequest = (avatarId: string) => {
+    return getRequest(ENDPOINTS.AVATAR_ONBOARDING + avatarId);
+  }
+
+  export const updateAvatarOnboardingApiRequest = (avatarId: string, payload: any) => {
+    return postRequest(ENDPOINTS.AVATAR_ONBOARDING_DETAILS + avatarId, payload);
+  }

@@ -213,8 +213,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
                     updatedAt: new Date()
                 }
                 onSessionUpdate(newSession)
-                // Navigate to the new chat URL with query parameter
-                router.push(`/chat-bot?chat-id=${sessionId}`)
+                // URL will be updated by the parent component
             }
 
         } catch (error) {
@@ -328,7 +327,6 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
         setInputMessage('')
         setSelectedKnowledgeBase(null)
         onNewSession()
-        router.push('/chat-bot')
     }
 
     const handleDeleteSession = () => {

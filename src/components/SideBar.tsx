@@ -29,7 +29,6 @@ import Image from 'next/image'
 const SideBar = () => {
     const router = useRouter()
     const userProfile = useSelector((state: any) => state.user.userProfile)
-    console.log("userProfile-----=", userProfile)
     const [isCollapsed, setIsCollapsed] = useState(false)
     const [isMobileOpen, setIsMobileOpen] = useState(false)
     const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false)

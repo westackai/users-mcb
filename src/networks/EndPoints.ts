@@ -19,4 +19,7 @@ export const ENDPOINTS = {
     GET_ALL_KNOWLEDGE_BASES:"knowledge-base/",
     HEALTH_TIP:"health-tips/",
     HEALTH_TIP_DETAILS_BY_ID:"health-tips/id/",
+    AVATAR_ONBOARDING:"avatar-onbording/",
+    AVATAR_ONBOARDING_DETAILS:"avatar-onbording/id/",
+
 }

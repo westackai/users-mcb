@@ -59,12 +59,22 @@ const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
     const router = useRouter()
     const [searchQuery, setSearchQuery] = useState('')
     const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set(['Today']))
+    const [userToggledFolders, setUserToggledFolders] = useState<Set<string>>(new Set())
     const [showSessionMenu, setShowSessionMenu] = useState<string | null>(null)
     const [editingSession, setEditingSession] = useState<string | null>(null)
     const [editTitle, setEditTitle] = useState('')
 
     // Group sessions by date
     const groupedSessions = sessions.reduce((acc, session) => {
+        // Skip sessions without updatedAt
+        if (!session.updatedAt) {
+            if (!acc['Older']) {
+                acc['Older'] = []
+            }
+            acc['Older'].push(session)
+            return acc
+        }
+
         const date = session.updatedAt.toDateString()
         const today = new Date().toDateString()
         const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toDateString()
@@ -92,31 +102,37 @@ const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
         return acc
     }, {} as Record<string, ChatSession[]>)
 
-    // Ensure Today folder is always expanded for new chats
+    // Ensure Today folder is expanded for new chats, but respect user's manual toggle
     useEffect(() => {
         if (sessions.length > 0) {
             const hasTodaySessions = sessions.some(session => {
+                if (!session.updatedAt) return false
                 const date = session.updatedAt.toDateString()
                 const today = new Date().toDateString()
                 return date === today
             })
 
-            if (hasTodaySessions && !expandedFolders.has('Today')) {
+            // Only auto-expand Today folder if user hasn't manually toggled it
+            if (hasTodaySessions && !expandedFolders.has('Today') && !userToggledFolders.has('Today')) {
                 setExpandedFolders(prev => new Set([...prev, 'Today']))
             }
         }
-    }, [sessions, expandedFolders])
+    }, [sessions])
 
     // Sort sessions within each group by updatedAt (newest first)
     Object.keys(groupedSessions).forEach(folderName => {
-        groupedSessions[folderName].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+        groupedSessions[folderName].sort((a, b) => {
+            const aTime = a.updatedAt ? a.updatedAt.getTime() : 0
+            const bTime = b.updatedAt ? b.updatedAt.getTime() : 0
+            return bTime - aTime
+        })
     })
 
     const filteredSessions = Object.keys(groupedSessions).reduce((acc, folderName) => {
         const folderSessions = groupedSessions[folderName].filter(session =>
-            session.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (session.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
             session.messages.some(msg =>
-                msg.content.toLowerCase().includes(searchQuery.toLowerCase())
+                (msg.content || '').toLowerCase().includes(searchQuery.toLowerCase())
             )
         )
 
@@ -128,7 +144,9 @@ const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
     }, {} as Record<string, ChatSession[]>)
 
     const toggleFolder = (folderName: string) => {
-        console.log('toggleFolderkjbfkwbfb', folderName)
+        // Mark this folder as manually toggled by user
+        setUserToggledFolders(prev => new Set([...prev, folderName]))
+        
         const newExpanded = new Set(expandedFolders)
         if (newExpanded.has(folderName)) {
             newExpanded.delete(folderName)
@@ -136,7 +154,6 @@ const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
             newExpanded.add(folderName)
         }
         setExpandedFolders(newExpanded)
-        console.log('newExpandedkjbfkwbfb', newExpanded)
     }
 
     const handleSessionMenu = (sessionId: string, event: React.MouseEvent) => {
@@ -146,7 +163,7 @@ const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
 
     const handleRename = (session: ChatSession) => {
         setEditingSession(session.id)
-        setEditTitle(session.title)
+        setEditTitle(session.title || 'Untitled Chat')
         setShowSessionMenu(null)
     }
 
@@ -164,6 +181,8 @@ const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
     }
 
     const formatTime = (date: Date) => {
+        if (!date) return 'Unknown time'
+        
         const now = new Date()
         const diffInHours = Math.floor((now.getTime() - date.getTime()) / (1000 * 60 * 60))
 
@@ -178,13 +197,15 @@ const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
 
     const getLastMessagePreview = (session: ChatSession) => {
         const lastMessage = session.messages[session.messages.length - 1]
-        if (!lastMessage) return 'No messages'
+        if (!lastMessage || !lastMessage.content) return 'No messages'
 
         const preview = lastMessage.content.substring(0, 50)
         return preview + (lastMessage.content.length > 50 ? '...' : '')
     }
 
     const isNewSession = (session: ChatSession) => {
+        if (!session.createdAt) return false
+        
         const today = new Date().toDateString()
         const sessionDate = session.createdAt.toDateString()
         return sessionDate === today
@@ -299,7 +320,6 @@ const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
                                                         }`}
                                                     onClick={() => {
                                                         onSessionSelect(session)
-                                                        router.push(`/chat-bot?chat-id=${session.id}`)
                                                     }}
                                                 >
                                                     <div className="flex items-start space-x-3">
@@ -328,7 +348,7 @@ const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
                                                             ) : (
                                                                 <div className="flex items-center space-x-2">
                                                                     <h4 className="text-sm font-medium text-gray-900 truncate">
-                                                                        {session.title}
+                                                                        {session.title || 'Untitled Chat'}
                                                                     </h4>
                                                                     {isNewSession(session) && (
                                                                         <span className="px-1.5 py-0.5 text-xs font-medium bg-green-100 text-green-800 rounded-full">
@@ -403,13 +423,12 @@ const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
                                 key={session.id}
                                 onClick={() => {
                                     onSessionSelect(session)
-                                    router.push(`/chat-bot/${session.id}`)
                                 }}
                                 className={`w-full p-2 rounded-lg transition-colors duration-200 ${currentSessionId === session.id
                                         ? 'bg-blue-100'
                                         : 'hover:bg-gray-100'
                                     }`}
-                                title={session.title}
+                                title={session.title || 'Untitled Chat'}
                             >
                                 <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto">
                                     <Bot className="h-4 w-4 text-white" />
@@ -420,7 +439,6 @@ const ChatHistorySidebar: React.FC<ChatHistorySidebarProps> = ({
                         <button
                             onClick={() => {
                                 onNewSession()
-                                router.push('/chat-bot')
                             }}
                             className="w-full p-2 hover:bg-blue-50 rounded-lg transition-colors duration-200"
                             title="New Chat"

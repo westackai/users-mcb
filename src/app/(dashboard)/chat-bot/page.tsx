@@ -45,13 +45,13 @@ const ChatBotPage = () => {
         const chatId = searchParams.get('chat-id')
         if (chatId && sessions.length > 0) {
             const session = sessions.find(s => s.id === chatId)
-            if (session) {
+            if (session && (!currentSession || currentSession.id !== chatId)) {
                 setCurrentSession(session)
             }
-        } else if (!chatId) {
+        } else if (!chatId && currentSession) {
             setCurrentSession(null)
         }
-    }, [searchParams, sessions])
+    }, [searchParams, sessions, currentSession])
 
     const loadConversations = async () => {
         try {
@@ -120,8 +120,9 @@ const ChatBotPage = () => {
         })
         
         setCurrentSession(updatedSession)
-        // Update URL with the new session ID
-        router.push(`/chat-bot?chat-id=${updatedSession.id}`)
+        
+        // Update URL with the new session ID - use replace instead of push to avoid history issues
+        router.replace(`/chat-bot?chat-id=${updatedSession.id}`)
     }
 
     const handleSessionDelete = (sessionId: string) => {
