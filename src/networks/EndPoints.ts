@@ -17,4 +17,6 @@ export const ENDPOINTS = {
     GET_CONVERSATIONS:"conversation/",
     GET_CONVERSATION_BY_ID:"conversation/id/",
     GET_ALL_KNOWLEDGE_BASES:"knowledge-base/",
+    HEALTH_TIP:"health-tips/",
+    HEALTH_TIP_DETAILS_BY_ID:"health-tips/id/",
 }

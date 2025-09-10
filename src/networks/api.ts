@@ -102,3 +102,13 @@ export const getAllKnowledgeBasesApiRequest = async () => {
     const response = await getRequest(ENDPOINTS.GET_ALL_KNOWLEDGE_BASES);
     return response;
 }
+
+// Health Tip API Requests
+export const getAllHealthTipsApiRequest = () => {
+    return getRequest(ENDPOINTS.HEALTH_TIP);
+  };
+  
+  export const getHealthTipByIdApiRequest = (Id: string) => { 
+    return getRequest(ENDPOINTS.HEALTH_TIP_DETAILS_BY_ID + Id);
+  }
+  
