@@ -29,7 +29,8 @@ import { getAllHealthTipsApiRequest  } from '@/networks/api'
 interface PersonalInfo {
     specialization: string
     image: string
-    experience: number
+    experience: number,
+    name: string
 }
 
 interface HealthTip {
@@ -212,9 +213,9 @@ const HealthTipsManagementPage = () => {
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="flex items-center gap-2">
 
-                                        <span className={`px-3 py-1 ${tip?.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} text-xs font-medium rounded-full`}>
-                                            {/* {tip.category ? tip.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Health'} */}
-                                            {tip?.is_active ? 'Active' : 'Inactive'}
+                                        <span className={`px-3 py-1 bg-slate-100 text-xs text-slate-700 font-medium rounded-full`}>
+                                            {tip.category ? tip.category.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase()) : 'Health'}
+                                            {/* {tip?.is_active ? 'Active' : 'Inactive'} */}
                                         </span>
                                         </div>
                                         <div className={`flex items-center space-x-2 text-sm ${
@@ -231,12 +232,12 @@ const HealthTipsManagementPage = () => {
                                             ? 'text-slate-900 group-hover:text-blue-600' 
                                             : 'text-slate-500'
                                     }`}>
-                                        {tip.title}
+                                        {tip.personal_info.name}
                                     </h3>
                                     <p className={`text-sm mb-4 leading-relaxed ${
                                         tip.is_active ? 'text-slate-600' : 'text-slate-400'
                                     }`}>
-                                        {tip.short_description || tip.description}
+                                        {tip.title || tip.description}
                                     </p>
 
                                     {/* Key Points */}
