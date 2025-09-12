@@ -148,6 +148,9 @@ const VideoConsultationPage = () => {
                 router.push(`/video-consultation/onboarding?avatar_id=${avatarId}`)
                 // router.push(`/video-consultation/onboarding?avatar_id=${avatarId}`)
             }
+            else{
+                router.push(`/video-consultation/${avatarId}`)
+            }
         }
          catch (error:any) {
             console.error('Error redirecting page:', error)

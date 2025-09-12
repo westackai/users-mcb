@@ -905,7 +905,7 @@ const AvatarCallComponent: React.FC<AvatarCallComponentProps> = ({ sessionData ,
             processor.current = null;
             microphone.current = null;
             speechTimeout.current = null;
-            // router.push('/video-consultation');
+            router.push('/video-consultation');
         } catch (error) {
             console.error('Error during cleanup:', error);
         }

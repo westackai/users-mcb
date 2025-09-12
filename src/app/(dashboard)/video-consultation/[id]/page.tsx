@@ -47,7 +47,7 @@ function TalkPageContent({ avatarData, avatarId }: { avatarData: any, avatarId: 
             
             const payload = {
                 avatar_id: 'dvp_Melisha_cloth3_pd',
-                duration: 30,
+                duration: 120,
                 language: "en", 
             }
 

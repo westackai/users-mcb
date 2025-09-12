@@ -110,7 +110,10 @@ const AvatarOnboardingPage = (props: Props) => {
             setError(null)
             
             const response = await avatarOnboardingApiRequest(avatarId || '')
-            console.log('Full API response:', response)
+            console.log('Full API response:', response?.data?.data[0]?.avatar_onbording)
+            if(response?.data?.data[0]?.avatar_onbording === true){
+                router.push(`/video-consultation`)
+            }
             
             // Handle different response structures
             let onboardingData = null
