@@ -24,7 +24,6 @@ const getAvatarData = (id: string) => {
             "image": "/avatar-2.avif"
         }
     ];
-
     return avatars.find(avatar => avatar.avatar_id === id) || avatars[0];
 };
 
