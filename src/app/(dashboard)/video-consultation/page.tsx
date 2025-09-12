@@ -143,13 +143,14 @@ const VideoConsultationPage = () => {
 
         try{
             const response = await avatarOnboardingApiRequest(avatarId)
-            if (response?.data?.success === false) {
+            console.log('Avatar onboarding response:', response?.data?.data[0]?.avatar_onbording)
+            if (response?.data?.data[0]?.avatar_onbording === false) {
                 console.log('Avatar onboarding response:', response?.data?.success)
                 router.push(`/video-consultation/onboarding?avatar_id=${avatarId}`)
                 // router.push(`/video-consultation/onboarding?avatar_id=${avatarId}`)
             }
             else{
-                router.push(`/video-consultation/${avatarId}`)
+                // router.push(`/video-consultation/${avatarId}`)
             }
         }
          catch (error:any) {
