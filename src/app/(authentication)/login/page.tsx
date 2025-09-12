@@ -17,6 +17,7 @@ const LoginPage = () => {
     email: '',
     otp: ''
   })
+  const [otpDigits, setOtpDigits] = useState(['', '', '', ''])
   const [isLoading, setIsLoading] = useState(false)
   const [otpSent, setOtpSent] = useState(false)
   const [countdown, setCountdown] = useState(0)
@@ -27,6 +28,65 @@ const LoginPage = () => {
       ...prev,
       [name]: value
     }))
+  }
+
+  const handleOtpChange = (index: number, value: string) => {
+    // Only allow single digit
+    if (value.length > 1) return
+    
+    const newOtpDigits = [...otpDigits]
+    newOtpDigits[index] = value
+    setOtpDigits(newOtpDigits)
+    
+    // Update formData.otp for submission
+    const otpString = newOtpDigits.join('')
+    setFormData(prev => ({
+      ...prev,
+      otp: otpString
+    }))
+    
+    // Auto-focus next input
+    if (value && index < 3) {
+      const nextInput = document.getElementById(`otp-${index + 1}`)
+      nextInput?.focus()
+    }
+  }
+
+  const handleOtpPaste = (e: React.ClipboardEvent) => {
+    e.preventDefault()
+    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 4)
+    
+    if (pastedData.length === 4) {
+      const newOtpDigits = pastedData.split('')
+      setOtpDigits(newOtpDigits)
+      setFormData(prev => ({
+        ...prev,
+        otp: pastedData
+      }))
+      
+      // Focus the last input
+      const lastInput = document.getElementById('otp-3')
+      lastInput?.focus()
+    }
+  }
+
+  const handleOtpKeyDown = (e: React.KeyboardEvent, index: number) => {
+    // Handle backspace
+    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+      const prevInput = document.getElementById(`otp-${index - 1}`)
+      prevInput?.focus()
+    }
+    
+    // Handle arrow keys
+    if (e.key === 'ArrowLeft' && index > 0) {
+      const prevInput = document.getElementById(`otp-${index - 1}`)
+      prevInput?.focus()
+    }
+    
+    if (e.key === 'ArrowRight' && index < 3) {
+      const nextInput = document.getElementById(`otp-${index + 1}`)
+      nextInput?.focus()
+    }
   }
 
   const handleSendOtp = async (e: React.FormEvent) => {
@@ -77,14 +137,15 @@ const LoginPage = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.otp) return
+    const otpString = otpDigits.join('')
+    if (!otpString || otpString.length !== 4) return
 
     setIsLoading(true)
     try {
       // TODO: Replace with actual OTP verification API call
       const payload = {
         email: formData.email,
-        otp: formData.otp
+        otp: otpString
       }
       const response = await authVerifyOtpApiRequest(payload)
       if (response) {
@@ -202,23 +263,29 @@ const LoginPage = () => {
                     </p> */}
                   </div>
 
-                  <div>
-                    <input
-                      id="otp"
-                      name="otp"
-                      type="text"
-                      required
-                      maxLength={4}
-                      value={formData.otp}
-                      onChange={handleInputChange}
-                      className="w-full px-4 py-3 text-center text-2xl font-mono border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-700 focus:border-transparent transition-all placeholder:text-gray-300 duration-200 tracking-widest"
-                      placeholder="0000"
-                    />
+                  <div className="flex justify-center space-x-3">
+                    {otpDigits.map((digit, index) => (
+                      <input
+                        key={index}
+                        id={`otp-${index}`}
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => handleOtpChange(index, e.target.value)}
+                        onPaste={handleOtpPaste}
+                        onKeyDown={(e) => handleOtpKeyDown(e, index)}
+                        className="w-12 h-12 text-center text-2xl font-mono border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 text-gray-700 focus:border-transparent transition-all duration-200"
+                        placeholder="0"
+                        autoComplete="off"
+                      />
+                    ))}
                   </div>
 
                   <button
                     type="submit"
-                    disabled={isLoading || formData.otp.length !== 4}
+                    disabled={isLoading || otpDigits.join('').length !== 4}
                     className="w-full bg-gradient-to-r cursor-pointer from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isLoading ? (
@@ -256,6 +323,7 @@ const LoginPage = () => {
                       onClick={() => {
                         setOtpSent(false)
                         setFormData(prev => ({ ...prev, otp: '' }))
+                        setOtpDigits(['', '', '', ''])
                       }}
                       className="text-sm cursor-pointer text-gray-600 hover:text-gray-800 transition-colors duration-200"
                     >
@@ -278,7 +346,7 @@ const LoginPage = () => {
               </div>
 
               {/* Sign Up Link */}
-              <div className="mt-6 text-center">
+              <div className="mt-2 text-center">
                 <a
                   href="/register"
                   className="text-blue-600 hover:text-blue-500 font-medium transition-colors duration-200"

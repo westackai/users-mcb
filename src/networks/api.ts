@@ -80,6 +80,10 @@ export const sendStreamingMessageToAvatarApiRequest = async (payload: any, onChu
     await streamingPostRequest(ENDPOINTS.AVATAR_MESSAGE, payload, onChunk);
 }
 
+export const getAvatarDetilasByIdApiRequest = async (avatarId: string) => {
+    const response = await getRequest(ENDPOINTS.AVATAR_DETAILS + avatarId);
+    return response;
+}
 
 // Conversation Summary API Requests
 export const conversationSummaryApiRequest = async (payload :any) => {
@@ -118,5 +122,5 @@ export const getAllHealthTipsApiRequest = () => {
   }
 
   export const updateAvatarOnboardingApiRequest = (avatarId: string, payload: any) => {
-    return postRequest(ENDPOINTS.AVATAR_ONBOARDING_DETAILS + avatarId, payload);
+    return postRequest(ENDPOINTS.AVATAR_ONBOARDING_CREATE + avatarId, payload);
   }

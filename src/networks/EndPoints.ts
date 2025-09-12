@@ -21,5 +21,6 @@ export const ENDPOINTS = {
     HEALTH_TIP_DETAILS_BY_ID:"health-tips/id/",
     AVATAR_ONBOARDING:"avatar-onbording/",
     AVATAR_ONBOARDING_DETAILS:"avatar-onbording/id/",
+    AVATAR_ONBOARDING_CREATE:"avatar-onbording/create/",
 
 }

@@ -297,10 +297,10 @@ const VideoConsultationPage = () => {
                                     <button 
                                         onClick={(e) => {
                                             e.stopPropagation()
-                                            // handleRedirectPage(avatar?.id || '')
+                                            handleRedirectPage(avatar?.uuid || '')
                                            
-                                            const avatarId = avatar.avatar_id || avatar.id
-                                            router.push(`/video-consultation/${avatar.id}?avatar_id=${avatarId}`)
+                                            // const avatarId = avatar.avatar_id || avatar.id
+                                            // router.push(`/video-consultation/${avatar.id}?avatar_id=${avatarId}`)
                                         }}
                                         className=" group flex items-center text-sm  font-medium rounded-full w-full justify-center py-4 cursor-pointer transition-all duration-300 ease-in-out
                                         transform hover:scale-105 hover:shadow-md bg-blue-50 text-blue-700 border-r-2 border-blue-600 shadow-sm"
