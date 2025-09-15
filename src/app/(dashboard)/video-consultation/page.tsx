@@ -49,6 +49,7 @@ const VideoConsultationPage = () => {
     const [showDetails, setShowDetails] = useState(false)
     const [avatarList, setAvatarList] = useState<AIAvatar[]>([])
     const [loading, setLoading] = useState(true)
+    const [startingConsultation, setStartingConsultation] = useState<string | null>(null)
     const router = useRouter()
     const specialties = [
         { id: 'all', name: 'All Conditions', icon: Activity, color: 'bg-blue-500' },
@@ -140,7 +141,8 @@ const VideoConsultationPage = () => {
     }
 
     const handleRedirectPage = async (avatarId: string) => {
-
+        setStartingConsultation(avatarId)
+        
         try{
             console.log('Avatar onboarding response:', avatarId)
             const response = await avatarOnboardingApiRequest(avatarId)
@@ -156,6 +158,8 @@ const VideoConsultationPage = () => {
         }
          catch (error:any) {
             console.error('Error redirecting page:', error)
+        } finally {
+            setStartingConsultation(null)
         }
         // router.push(`/video-consultation/onboarding?avatar_id=${avatarId}`)
     }
@@ -307,10 +311,25 @@ const VideoConsultationPage = () => {
                                             // const avatarId = avatar.avatar_id || avatar.id
                                             // router.push(`/video-consultation/${avatar.id}?avatar_id=${avatarId}`)
                                         }}
-                                        className=" group flex items-center text-sm  font-medium rounded-full w-full justify-center py-4 cursor-pointer transition-all duration-300 ease-in-out
-                                        transform hover:scale-105 hover:shadow-md bg-blue-50 text-blue-700 border-r-2 border-blue-600 shadow-sm"
+                                        disabled={startingConsultation === avatar?.uuid}
+                                        className={`group flex items-center text-sm font-medium rounded-full w-full justify-center py-4 cursor-pointer transition-all duration-300 ease-in-out
+                                        transform hover:scale-105 hover:shadow-md bg-blue-50 text-blue-700 border-r-2 border-blue-600 shadow-sm ${
+                                            startingConsultation === avatar?.uuid 
+                                                ? 'opacity-50 cursor-not-allowed transform-none hover:scale-100 hover:shadow-sm' 
+                                                : ''
+                                        }`}
                                     >
-                                        Start Consultation
+                                        {startingConsultation === avatar?.uuid ? (
+                                            <div className="flex items-center">
+                                                <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-blue-700" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                                Starting...
+                                            </div>
+                                        ) : (
+                                            'Start Consultation'
+                                        )}
                                     </button>
                                 </div>
                             </div>
