@@ -17,6 +17,7 @@ const LoginPage = () => {
     email: '',
     otp: ''
   })
+  
   const [otpDigits, setOtpDigits] = useState(['', '', '', ''])
   const [isLoading, setIsLoading] = useState(false)
   const [otpSent, setOtpSent] = useState(false)
