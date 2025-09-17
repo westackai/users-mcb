@@ -51,22 +51,22 @@ function TalkPageContent({ avatarData, avatarId }: { avatarData: any, avatarId: 
                 "persona_id": "pdced222244b", // Sales Coach (stock persona)
                 "voice_id": "uKG8deEEmpcJpHA3BEdW", // Optional voice ID
                 "start_pipeline": true,
-                "max_call_duration": 10,
+                "max_call_duration": 20,
                 "participant_absent_timeout": 5,
                 // "callback_url": "string"
             };
 
-            console.log('Creating Tavus conversation with payload:', payload);
+            console.log('Creating Ai conversation with payload:', payload);
 
             // Use the new API function with proper error handling
             const response = await createTavusConversationApiRequest(payload);
 
-            console.log('Tavus conversation created successfully:', response);
+            console.log('Ai conversation created successfully:', response);
             setRoomUrl(response.roomUrl);
 
         } catch (err) {
-            console.error('Error creating Tavus session:', err);
-            const errorMessage = err instanceof Error ? err.message : 'Failed to create Tavus session. Please try again.';
+            console.error('Error creating Ai session:', err);
+            const errorMessage = err instanceof Error ? err.message : 'Failed to create Ai session. Please try again.';
             setError(errorMessage);
         } finally {
             setIsLoading(false);
@@ -75,12 +75,12 @@ function TalkPageContent({ avatarData, avatarId }: { avatarData: any, avatarId: 
 
     // Function to restart session
     const restartSession = async () => {
-        console.log('Restarting Tavus session...');
+        console.log('Restarting Ai session...');
         sessionRunSingle.current = false;
         setRoomUrl(null);
         setError(null);
         await createSession();
-        console.log('Tavus session restart completed');
+        console.log('Ai session restart completed');
     }
 
     // Handle call end
@@ -107,7 +107,7 @@ function TalkPageContent({ avatarData, avatarId }: { avatarData: any, avatarId: 
             <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
                 <div className="text-center text-slate-600">
                     <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <h2 className="text-xl font-semibold mb-2">Creating Tavus Session</h2>
+                    <h2 className="text-xl font-semibold mb-2">Creating Ai Session</h2>
                     <p className="text-slate-500">Please wait while we set up your AI conversation...</p>
                 </div>
             </div>
@@ -124,7 +124,7 @@ function TalkPageContent({ avatarData, avatarId }: { avatarData: any, avatarId: 
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                         </svg>
                     </div>
-                    <h2 className="text-xl font-semibold mb-2 text-red-600">Tavus Session Failed</h2>
+                    <h2 className="text-xl font-semibold mb-2 text-red-600">Ai Session Failed</h2>
                     <p className="text-slate-500 mb-4">{error}</p>
                     <button
                         onClick={() => {
