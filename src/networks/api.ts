@@ -124,3 +124,52 @@ export const getAllHealthTipsApiRequest = () => {
   export const updateAvatarOnboardingApiRequest = (avatarId: string, payload: any) => {
     return postRequest(ENDPOINTS.AVATAR_ONBOARDING_CREATE + avatarId, payload);
   }
+
+
+//   Tavus Avatar AI
+export const tavusAiApiRequest = (payload: any) => {
+    return postRequest(ENDPOINTS.TAVUS_AI, payload);
+}
+
+// Create Tavus conversation with proper error handling
+export const createTavusConversationApiRequest = async (payload: {
+    replica_id: string;
+    persona_id: string;
+    voice_id?: string;
+}) => {
+    try {
+        console.log('Creating Tavus conversation with payload:', payload);
+        const response = await postRequest(ENDPOINTS.TAVUS_AI, JSON.stringify(payload));
+        
+        // Log the response for debugging
+        console.log('Tavus API Response:', response);
+        
+        // Check if response has the expected structure
+        if (!response || !response.data) {
+            throw new Error('Invalid API response: No data received from Tavus API');
+        }
+
+        // Extract room URL from nested response structure
+        const roomUrl = response.data?.data?.data?.room_url || response.data?.data?.room_url || response.data?.room_url;
+        
+        if (!roomUrl) {
+            console.error('No room URL in Tavus response:', response.data);
+            throw new Error('No room URL received from Tavus API. Please check your configuration.');
+        }
+
+        return {
+            success: true,
+            roomUrl: roomUrl,
+            conversationId: response.data?.data?.data?.conversation_id,
+            data: response.data
+        };
+        
+    } catch (error) {
+        console.error('Error creating Tavus conversation:', error);
+        throw new Error(
+            error instanceof Error 
+                ? error.message 
+                : 'Failed to create Tavus conversation. Please try again.'
+        );
+    }
+}

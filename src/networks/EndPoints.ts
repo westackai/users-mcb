@@ -22,5 +22,6 @@ export const ENDPOINTS = {
     AVATAR_ONBOARDING:"avatar-onbording/",
     AVATAR_ONBOARDING_DETAILS:"avatar-onbording/id/",
     AVATAR_ONBOARDING_CREATE:"avatar-onbording/create/",
+    TAVUS_AI : "tavus/session/start"
 
 }

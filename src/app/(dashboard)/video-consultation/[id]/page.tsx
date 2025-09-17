@@ -27,14 +27,15 @@ const getAvatarData = (id: string) => {
     return avatars.find(avatar => avatar.avatar_id === id) || avatars[0];
 };
 
-import { StreamingAvatarProvider } from '@/components/logic';
-import AvatarCallComponent from "@/components/AvatarStreemComponent";
-import { createSessionApiRequest } from "@/networks/api";
+import { createTavusConversationApiRequest } from "@/networks/api";
+import { useRouter } from "next/navigation";
+import TavusConversationComponent from "@/components/Tavus-ai/TavusConversationComponent";
+import { DailyProvider } from '@daily-co/daily-react';
 
 // Inner component that has access to the streaming avatar context
 function TalkPageContent({ avatarData, avatarId }: { avatarData: any, avatarId: string }) {
-    const [sessionData, setSessionData] = useState<any>(null);
-    const [sessionId, setSessionId] = useState<any>(null);
+    const router = useRouter();
+    const [roomUrl, setRoomUrl] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const sessionRunSingle = useRef(false);
@@ -43,71 +44,54 @@ function TalkPageContent({ avatarData, avatarId }: { avatarData: any, avatarId: 
         try {
             setIsLoading(true);
             setError(null);
-            
+
+            // Use stock replica and persona IDs as per Tavus documentation
             const payload = {
-                avatar_id: 'dvp_Melisha_cloth3_pd',
-                duration: 120,
-                language: "en", 
-            }
-
-            console.log('Creating session with payload:', payload);
-            const response = await createSessionApiRequest(JSON.stringify(payload));
-            console.log('API Response:', response);
-            
-            // Check if response has the expected structure
-            if (!response || !response.data) {
-                throw new Error('Invalid API response: No data received');
-            }
-
-            // Log the full response structure for debugging
-            console.log('Response data structure:', JSON.stringify(response.data, null, 2));
-
-            // Handle nested response structure: response.data.data.credentials
-            const responseData = response.data.data || response.data;
-            
-            // Check if credentials exist
-            if (!responseData.credentials) {
-                console.error('No credentials in response:', responseData);
-                throw new Error('No credentials received from API. Please check your avatar configuration.');
-            }
-
-            // Validate required credential fields
-            const credentials = responseData.credentials;
-            const requiredFields = ['agora_app_id', 'agora_channel', 'agora_token', 'agora_uid'];
-            const missingFields = requiredFields.filter(field => !credentials[field]);
-            
-            if (missingFields.length > 0) {
-                console.error('Missing credential fields:', missingFields);
-                throw new Error(`Missing required credentials: ${missingFields.join(', ')}`);
-            }
-
-            // Structure the session data to match AvatarCallComponent expectations
-            const sessionData = {
-                session_id: responseData._id || responseData.session_id,
-                credentials: credentials
+                "replica_id": "rfe12d8b9597", // Nathan (stock replica)
+                "persona_id": "pdced222244b", // Sales Coach (stock persona)
+                "voice_id": "uKG8deEEmpcJpHA3BEdW", // Optional voice ID
+                "start_pipeline": true,
+                "max_call_duration": 10,
+                "participant_absent_timeout": 5,
+                // "callback_url": "string"
             };
-            
-            console.log('Structured session data:', sessionData);
-            setSessionData(sessionData);
-            setSessionId(responseData._id);
+
+            console.log('Creating Tavus conversation with payload:', payload);
+
+            // Use the new API function with proper error handling
+            const response = await createTavusConversationApiRequest(payload);
+
+            console.log('Tavus conversation created successfully:', response);
+            setRoomUrl(response.roomUrl);
+
         } catch (err) {
-            console.error('Error creating session:', err);
-            const errorMessage = err instanceof Error ? err.message : 'Failed to create session. Please try again.';
+            console.error('Error creating Tavus session:', err);
+            const errorMessage = err instanceof Error ? err.message : 'Failed to create Tavus session. Please try again.';
             setError(errorMessage);
         } finally {
             setIsLoading(false);
         }
     }
 
-    // Function to restart session - will be called from AvatarCallComponent
+    // Function to restart session
     const restartSession = async () => {
-        console.log('Restarting session...');
+        console.log('Restarting Tavus session...');
         sessionRunSingle.current = false;
-        setSessionData(null);
-        setSessionId(null);
+        setRoomUrl(null);
         setError(null);
         await createSession();
-        console.log('Session restart completed');
+        console.log('Tavus session restart completed');
+    }
+
+    // Handle call end
+    const handleCallEnd = () => {
+        console.log('Tavus call ended');
+        router.push('/video-consultation'); // Navigate back to dashboard
+    }
+
+    // Handle call start
+    const handleCallStart = () => {
+        console.log('Tavus call started successfully');
     }
 
     useEffect(() => {
@@ -123,8 +107,8 @@ function TalkPageContent({ avatarData, avatarId }: { avatarData: any, avatarId: 
             <div className="h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
                 <div className="text-center text-slate-600">
                     <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                    <h2 className="text-xl font-semibold mb-2">Creating Session</h2>
-                    <p className="text-slate-500">Please wait while we set up your avatar session...</p>
+                    <h2 className="text-xl font-semibold mb-2">Creating Tavus Session</h2>
+                    <p className="text-slate-500">Please wait while we set up your AI conversation...</p>
                 </div>
             </div>
         );
@@ -140,7 +124,7 @@ function TalkPageContent({ avatarData, avatarId }: { avatarData: any, avatarId: 
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
                         </svg>
                     </div>
-                    <h2 className="text-xl font-semibold mb-2 text-red-600">Session Creation Failed</h2>
+                    <h2 className="text-xl font-semibold mb-2 text-red-600">Tavus Session Failed</h2>
                     <p className="text-slate-500 mb-4">{error}</p>
                     <button
                         onClick={() => {
@@ -156,18 +140,20 @@ function TalkPageContent({ avatarData, avatarId }: { avatarData: any, avatarId: 
         );
     }
 
-    return (
-        <div>
-            {
-                sessionData && (
-                    <AvatarCallComponent 
-                        sessionData={sessionData} 
-                        onRestartSession={restartSession}
-                    />
-                )
-            }
-        </div>
-    );
+    // Render Tavus conversation component when room URL is available
+    if (roomUrl) {
+        return (
+            <DailyProvider>
+                <TavusConversationComponent
+                    conversationUrl={roomUrl}
+                    onCallEnd={handleCallEnd}
+                    onCallStart={handleCallStart}
+                />
+            </DailyProvider>
+        );
+    }
+
+    return null;
 }
 
 export default function TalkWithAvatarPage({ params }: { params: Promise<{ id: string }> }) {
@@ -178,9 +164,7 @@ export default function TalkWithAvatarPage({ params }: { params: Promise<{ id: s
 
     return (
         <div className="w-full min-h-screen bg-gray-50 chat-interface-active">
-            <StreamingAvatarProvider basePath={process.env.NEXT_PUBLIC_BASE_API_URL}>
-                <TalkPageContent avatarData={avatarData} avatarId={avatarId} />
-            </StreamingAvatarProvider>
+            <TalkPageContent avatarData={avatarData} avatarId={avatarId} />
         </div>
     );
 } 

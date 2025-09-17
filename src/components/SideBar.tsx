@@ -106,8 +106,8 @@ const SideBar = () => {
     ]
 
     const isActive = (href: string) => {
-        if (href === '/dashboard') {
-            return pathname === '/dashboard' || pathname === '/'
+        if (href === '/video-consultation') {
+            return pathname === '/video-consultation' || pathname === '/'
         }
         return pathname === href
     }
@@ -141,7 +141,7 @@ const SideBar = () => {
     return (
         <>
             {/* Mobile Menu Button */}
-            <div className="lg:hidden fixed top-4 left-4 z-50">
+            <div className="lg:hidden fixed top-4 left-4">
                 <button
                     onClick={() => setIsMobileOpen(!isMobileOpen)}
                     className="p-2 bg-white rounded-lg shadow-lg border border-gray-200 transition-all duration-300 hover:scale-105 hover:shadow-xl"

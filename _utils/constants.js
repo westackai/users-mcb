@@ -24,7 +24,7 @@ export const COOKIES = {
   };
   
   export const PRIVATE_ROUTES = {
-    DASHBOARD: "/dashboard",
+    DASHBOARD: "/video-consultation",
     OVERVIEW: "/overview",
   };
   
