@@ -51,7 +51,7 @@ function TalkPageContent({ avatarData, avatarId }: { avatarData: any, avatarId: 
                 "persona_id": "pdced222244b", // Sales Coach (stock persona)
                 "voice_id": "uKG8deEEmpcJpHA3BEdW", // Optional voice ID
                 "start_pipeline": true,
-                "max_call_duration": 20,
+                "max_call_duration": 60,
                 "participant_absent_timeout": 5,
                 // "callback_url": "string"
             };
